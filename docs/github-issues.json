@@ -1,1 +1,226 @@
-{}
+{
+  "IAM-CON": {
+    "number": 1,
+    "url": "https://github.com/gntik-ai/falcone-iam/issues/1"
+  },
+  "IAM-IDN": {
+    "number": 2,
+    "url": "https://github.com/gntik-ai/falcone-iam/issues/2"
+  },
+  "IAM-AUT": {
+    "number": 3,
+    "url": "https://github.com/gntik-ai/falcone-iam/issues/3"
+  },
+  "IAM-SES": {
+    "number": 4,
+    "url": "https://github.com/gntik-ai/falcone-iam/issues/4"
+  },
+  "IAM-RBAC": {
+    "number": 5,
+    "url": "https://github.com/gntik-ai/falcone-iam/issues/5"
+  },
+  "IAM-MAC": {
+    "number": 6,
+    "url": "https://github.com/gntik-ai/falcone-iam/issues/6"
+  },
+  "IAM-FED": {
+    "number": 7,
+    "url": "https://github.com/gntik-ai/falcone-iam/issues/7"
+  },
+  "IAM-KEY": {
+    "number": 8,
+    "url": "https://github.com/gntik-ai/falcone-iam/issues/8"
+  },
+  "IAM-INT": {
+    "number": 9,
+    "url": "https://github.com/gntik-ai/falcone-iam/issues/9"
+  },
+  "IAM-REV": {
+    "number": 10,
+    "url": "https://github.com/gntik-ai/falcone-iam/issues/10"
+  },
+  "IAM-AUD": {
+    "number": 11,
+    "url": "https://github.com/gntik-ai/falcone-iam/issues/11"
+  },
+  "IAM-OPS": {
+    "number": 12,
+    "url": "https://github.com/gntik-ai/falcone-iam/issues/12"
+  },
+  "IAM-MIG": {
+    "number": 13,
+    "url": "https://github.com/gntik-ai/falcone-iam/issues/13"
+  },
+  "IAM-DEV": {
+    "number": 14,
+    "url": "https://github.com/gntik-ai/falcone-iam/issues/14"
+  },
+  "IAM-CON-001": {
+    "number": 15,
+    "url": "https://github.com/gntik-ai/falcone-iam/issues/15"
+  },
+  "IAM-CON-002": {
+    "number": 16,
+    "url": "https://github.com/gntik-ai/falcone-iam/issues/16"
+  },
+  "IAM-CON-003": {
+    "number": 17,
+    "url": "https://github.com/gntik-ai/falcone-iam/issues/17"
+  },
+  "IAM-IDN-001": {
+    "number": 18,
+    "url": "https://github.com/gntik-ai/falcone-iam/issues/18"
+  },
+  "IAM-IDN-002": {
+    "number": 19,
+    "url": "https://github.com/gntik-ai/falcone-iam/issues/19"
+  },
+  "IAM-IDN-003": {
+    "number": 20,
+    "url": "https://github.com/gntik-ai/falcone-iam/issues/20"
+  },
+  "IAM-AUT-001": {
+    "number": 21,
+    "url": "https://github.com/gntik-ai/falcone-iam/issues/21"
+  },
+  "IAM-AUT-002": {
+    "number": 22,
+    "url": "https://github.com/gntik-ai/falcone-iam/issues/22"
+  },
+  "IAM-AUT-003": {
+    "number": 23,
+    "url": "https://github.com/gntik-ai/falcone-iam/issues/23"
+  },
+  "IAM-SES-001": {
+    "number": 24,
+    "url": "https://github.com/gntik-ai/falcone-iam/issues/24"
+  },
+  "IAM-SES-002": {
+    "number": 25,
+    "url": "https://github.com/gntik-ai/falcone-iam/issues/25"
+  },
+  "IAM-SES-003": {
+    "number": 26,
+    "url": "https://github.com/gntik-ai/falcone-iam/issues/26"
+  },
+  "IAM-RBAC-001": {
+    "number": 27,
+    "url": "https://github.com/gntik-ai/falcone-iam/issues/27"
+  },
+  "IAM-RBAC-002": {
+    "number": 28,
+    "url": "https://github.com/gntik-ai/falcone-iam/issues/28"
+  },
+  "IAM-RBAC-003": {
+    "number": 29,
+    "url": "https://github.com/gntik-ai/falcone-iam/issues/29"
+  },
+  "IAM-MAC-001": {
+    "number": 30,
+    "url": "https://github.com/gntik-ai/falcone-iam/issues/30"
+  },
+  "IAM-MAC-002": {
+    "number": 31,
+    "url": "https://github.com/gntik-ai/falcone-iam/issues/31"
+  },
+  "IAM-MAC-003": {
+    "number": 32,
+    "url": "https://github.com/gntik-ai/falcone-iam/issues/32"
+  },
+  "IAM-FED-001": {
+    "number": 33,
+    "url": "https://github.com/gntik-ai/falcone-iam/issues/33"
+  },
+  "IAM-FED-002": {
+    "number": 34,
+    "url": "https://github.com/gntik-ai/falcone-iam/issues/34"
+  },
+  "IAM-FED-003": {
+    "number": 35,
+    "url": "https://github.com/gntik-ai/falcone-iam/issues/35"
+  },
+  "IAM-KEY-001": {
+    "number": 36,
+    "url": "https://github.com/gntik-ai/falcone-iam/issues/36"
+  },
+  "IAM-KEY-002": {
+    "number": 37,
+    "url": "https://github.com/gntik-ai/falcone-iam/issues/37"
+  },
+  "IAM-KEY-003": {
+    "number": 38,
+    "url": "https://github.com/gntik-ai/falcone-iam/issues/38"
+  },
+  "IAM-INT-001": {
+    "number": 39,
+    "url": "https://github.com/gntik-ai/falcone-iam/issues/39"
+  },
+  "IAM-INT-002": {
+    "number": 40,
+    "url": "https://github.com/gntik-ai/falcone-iam/issues/40"
+  },
+  "IAM-INT-003": {
+    "number": 41,
+    "url": "https://github.com/gntik-ai/falcone-iam/issues/41"
+  },
+  "IAM-REV-001": {
+    "number": 42,
+    "url": "https://github.com/gntik-ai/falcone-iam/issues/42"
+  },
+  "IAM-REV-002": {
+    "number": 43,
+    "url": "https://github.com/gntik-ai/falcone-iam/issues/43"
+  },
+  "IAM-REV-003": {
+    "number": 44,
+    "url": "https://github.com/gntik-ai/falcone-iam/issues/44"
+  },
+  "IAM-AUD-001": {
+    "number": 45,
+    "url": "https://github.com/gntik-ai/falcone-iam/issues/45"
+  },
+  "IAM-AUD-002": {
+    "number": 46,
+    "url": "https://github.com/gntik-ai/falcone-iam/issues/46"
+  },
+  "IAM-AUD-003": {
+    "number": 47,
+    "url": "https://github.com/gntik-ai/falcone-iam/issues/47"
+  },
+  "IAM-OPS-001": {
+    "number": 48,
+    "url": "https://github.com/gntik-ai/falcone-iam/issues/48"
+  },
+  "IAM-OPS-002": {
+    "number": 49,
+    "url": "https://github.com/gntik-ai/falcone-iam/issues/49"
+  },
+  "IAM-OPS-003": {
+    "number": 50,
+    "url": "https://github.com/gntik-ai/falcone-iam/issues/50"
+  },
+  "IAM-MIG-001": {
+    "number": 51,
+    "url": "https://github.com/gntik-ai/falcone-iam/issues/51"
+  },
+  "IAM-MIG-002": {
+    "number": 52,
+    "url": "https://github.com/gntik-ai/falcone-iam/issues/52"
+  },
+  "IAM-MIG-003": {
+    "number": 53,
+    "url": "https://github.com/gntik-ai/falcone-iam/issues/53"
+  },
+  "IAM-DEV-001": {
+    "number": 54,
+    "url": "https://github.com/gntik-ai/falcone-iam/issues/54"
+  },
+  "IAM-DEV-002": {
+    "number": 55,
+    "url": "https://github.com/gntik-ai/falcone-iam/issues/55"
+  },
+  "IAM-DEV-003": {
+    "number": 56,
+    "url": "https://github.com/gntik-ai/falcone-iam/issues/56"
+  }
+}
