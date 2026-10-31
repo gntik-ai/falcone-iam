@@ -1,0 +1,1253 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-31",
+  "baseline": "b694e45e487b1c49238e30a544fb7076fc18a7d6",
+  "epics": [
+    {
+      "id": "IAM-CON",
+      "category": "con",
+      "title": "Falcone contracts and ownership",
+      "outcome": "Freeze observable compatibility and a single writer for each security object.",
+      "stories": [
+        {
+          "id": "IAM-CON-001",
+          "title": "Inventory Falcone IAM contracts and consumers",
+          "description": "A versioned inventory of identity and permission contracts.",
+          "story": "As a platform maintainer, I want a versioned inventory of identity and permission contracts, so that replacement scope is measurable.",
+          "phase": "P0",
+          "effort": "M",
+          "dependencies": [],
+          "requirements": [
+            {
+              "id": "FR-CON-001-1",
+              "statement": "The system must preserve the approved Falcone IAM API paths, response schemas, errors and tenant/workspace semantics in a versioned contract suite."
+            },
+            {
+              "id": "FR-CON-001-2",
+              "statement": "The migration inventory must classify every identity consumer and native Keycloak dependency as retained, adapted or retired."
+            }
+          ],
+          "acceptance": [
+            "Record current endpoints, issuer/audience assumptions, custom claims, role catalog and all consumers against a pinned Falcone commit.",
+            "Fixtures exercise positive and negative behavior in both control-plane implementations and the consoles.",
+            "Separate implemented contracts, source-declared capabilities and unverified deployment assumptions; product owners approve the compatibility list."
+          ]
+        },
+        {
+          "id": "IAM-CON-002",
+          "title": "Define the identity and authorization ownership boundary",
+          "description": "One authoritative owner per identity, role, resource and quota.",
+          "story": "As a system architect, I want one authoritative owner per identity, role, resource and quota, so that integrations avoid conflicting writes.",
+          "phase": "P0",
+          "effort": "M",
+          "dependencies": [
+            "IAM-CON-001"
+          ],
+          "requirements": [
+            {
+              "id": "FR-CON-002-1",
+              "statement": "The system must document one authoritative writer and a versioned projection contract for every shared identity and authorization entity."
+            },
+            {
+              "id": "FR-CON-002-2",
+              "statement": "The system must consume Falcone plan and quota decisions without maintaining a second independently editable entitlement catalog."
+            }
+          ],
+          "acceptance": [
+            "Publish an ownership matrix for users, memberships, roles, resources, credentials, keys, quotas and audit events.",
+            "Preserve custom role semantics from the Falcone authorization model, including custom: names and subset-of-creator constraints.",
+            "Define bootstrap ordering so IAM login and authorization do not depend synchronously on workflow or serverless availability."
+          ]
+        },
+        {
+          "id": "IAM-CON-003",
+          "title": "Select and qualify the protocol implementation",
+          "description": "A maintained protocol library behind Falcone interfaces.",
+          "story": "As a security engineer, I want a maintained protocol library behind Falcone interfaces, so that the team can customize the product without inventing authentication protocols.",
+          "phase": "P0",
+          "effort": "L",
+          "dependencies": [
+            "IAM-CON-001"
+          ],
+          "requirements": [
+            {
+              "id": "FR-CON-003-1",
+              "statement": "The implementation must use maintained cryptographic and OIDC/OAuth libraries with pinned versions, dependency provenance and an upgrade owner."
+            },
+            {
+              "id": "FR-CON-003-2",
+              "statement": "The release process must run the chosen OIDC conformance profile and documented OAuth negative tests against the configured Falcone service."
+            }
+          ],
+          "acceptance": [
+            "Prototype the proposed Node.js oidc-provider adapter with PostgreSQL persistence and production key custody; compare Go/Fosite or a Hydra adapter if a mandatory feature fails.",
+            "Record supported flows, unsupported extensions, license obligations, key-signing integration and measured operational costs in an ADR.",
+            "Passing library certification must not be represented as certification of Falcone; release requires tests of Falcone configuration and adapters."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "IAM-IDN",
+      "category": "idn",
+      "title": "Identity, tenancy and membership lifecycle",
+      "outcome": "Manage tenant-isolated human and service principals with stable identifiers.",
+      "stories": [
+        {
+          "id": "IAM-IDN-001",
+          "title": "Implement principals and scoped memberships",
+          "description": "Stable identities with explicit tenant and workspace memberships.",
+          "story": "As a tenant administrator, I want stable identities with explicit tenant and workspace memberships, so that users can join multiple workspaces without crossing boundaries.",
+          "phase": "P1",
+          "effort": "L",
+          "dependencies": [
+            "IAM-CON-002"
+          ],
+          "requirements": [
+            {
+              "id": "FR-IDN-001-1",
+              "statement": "The system must identify principals with immutable IDs and represent tenant/workspace membership separately from profile attributes."
+            },
+            {
+              "id": "FR-IDN-001-2",
+              "statement": "Every identity lookup and mutation must enforce its tenant boundary, including when two issuers use the same subject or client identifier."
+            }
+          ],
+          "acceptance": [
+            "Uniqueness and foreign-key checks include the relevant tenant scope; tests reuse identical display names across tenants.",
+            "Legacy identities map by verified issuer and subject, never by email alone.",
+            "Membership changes use optimistic version checks and cannot delete or demote the final active tenant owner without an approved transfer."
+          ]
+        },
+        {
+          "id": "IAM-IDN-002",
+          "title": "Implement invitations, provisioning and suspension",
+          "description": "Idempotent invitation and deprovisioning flows.",
+          "story": "As a tenant owner, I want idempotent invitation and deprovisioning flows, so that access follows the tenant lifecycle.",
+          "phase": "P1",
+          "effort": "L",
+          "dependencies": [
+            "IAM-IDN-001"
+          ],
+          "requirements": [
+            {
+              "id": "FR-IDN-002-1",
+              "statement": "The system must support expiring single-use invitations, activation, suspension, reactivation and membership removal through Falcone APIs."
+            },
+            {
+              "id": "FR-IDN-002-2",
+              "statement": "Lifecycle mutations must commit an audit record and durable propagation event with their authoritative state change."
+            }
+          ],
+          "acceptance": [
+            "Invite redemption is tenant-bound and cannot be replayed or claimed through unverified account linking.",
+            "Repeated provisioning requests with one idempotency key return the original result; conflicting payload reuse fails.",
+            "Suspension stops new sessions immediately and produces observable downstream revocation jobs; incomplete cleanup is visible and retryable."
+          ]
+        },
+        {
+          "id": "IAM-IDN-003",
+          "title": "Implement self-service profile and safe account linking",
+          "description": "Verified profile updates and account linking.",
+          "story": "As an end user, I want verified profile updates and account linking, so that I can maintain my account without losing control of it.",
+          "phase": "P2",
+          "effort": "M",
+          "dependencies": [
+            "IAM-IDN-001",
+            "IAM-AUT-002"
+          ],
+          "requirements": [
+            {
+              "id": "FR-IDN-003-1",
+              "statement": "The system must require fresh authentication and proof of both identities before linking local and federated accounts."
+            },
+            {
+              "id": "FR-IDN-003-2",
+              "statement": "The system must support verified email changes and configurable profile fields without allowing clients to set tenant, role or entitlement claims."
+            }
+          ],
+          "acceptance": [
+            "Email normalization and uniqueness policy are explicit per tenant and do not silently merge accounts.",
+            "Changing an email verifies the new address and notifies the existing address; recovery channel changes require step-up.",
+            "Unlinking the last usable authentication method fails; an administrator cannot silently impersonate the linked user."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "IAM-AUT",
+      "category": "aut",
+      "title": "Login, MFA and recovery",
+      "outcome": "Provide first-party login and recovery without weakening administrator access.",
+      "stories": [
+        {
+          "id": "IAM-AUT-001",
+          "title": "Implement local authentication and abuse controls",
+          "description": "A Falcone login flow with secure credential handling.",
+          "story": "As an end user, I want a Falcone login flow with secure credential handling, so that I can sign in reliably.",
+          "phase": "P1",
+          "effort": "L",
+          "dependencies": [
+            "IAM-IDN-001",
+            "IAM-CON-003"
+          ],
+          "requirements": [
+            {
+              "id": "FR-AUT-001-1",
+              "statement": "The system must hash local passwords using a reviewed adaptive password-hashing library and configurable cost policy, never reversible encryption."
+            },
+            {
+              "id": "FR-AUT-001-2",
+              "statement": "The system must rate-limit login, signup and recovery attempts by multiple signals and return non-enumerating public failure responses."
+            }
+          ],
+          "acceptance": [
+            "Use a measured Argon2id profile unless the approved cryptographic environment requires a reviewed alternative; rehash on successful login when policy changes.",
+            "Login interactions are CSRF-protected, expire and bind to the correct authorization request; credentials and tokens never enter logs.",
+            "Distributed abuse tests cover password spraying and limiter-store failure without permitting unbounded hashing work or permanent attacker-controlled lockout."
+          ]
+        },
+        {
+          "id": "IAM-AUT-002",
+          "title": "Implement passkeys, MFA and step-up",
+          "description": "Passkeys and enforced MFA for sensitive actions.",
+          "story": "As a security administrator, I want passkeys and enforced MFA for sensitive actions, so that account compromise has a smaller impact.",
+          "phase": "P1",
+          "effort": "L",
+          "dependencies": [
+            "IAM-AUT-001",
+            "IAM-KEY-001"
+          ],
+          "requirements": [
+            {
+              "id": "FR-AUT-002-1",
+              "statement": "The system must support WebAuthn credentials and TOTP with audited enrollment, removal and recovery-code lifecycle."
+            },
+            {
+              "id": "FR-AUT-002-2",
+              "statement": "The system must require policy-defined recent MFA for administrator access and high-risk credential or permission changes."
+            }
+          ],
+          "acceptance": [
+            "WebAuthn verification checks RP ID, origin, challenge, user verification and credential ownership; challenges are single-use.",
+            "TOTP secrets are encrypted with managed keys and recovery codes are hashed and single-use; replay and clock-skew rules are tested.",
+            "Step-up freshness and authentication method are carried in trusted session state; losing a factor cannot bypass the recovery policy."
+          ]
+        },
+        {
+          "id": "IAM-AUT-003",
+          "title": "Implement recovery and lifecycle screens",
+          "description": "Recovery and account-status flows in the Falcone console.",
+          "story": "As an end user, I want recovery and account-status flows in the Falcone console, so that I can regain access without weakening authentication.",
+          "phase": "P2",
+          "effort": "M",
+          "dependencies": [
+            "IAM-AUT-002",
+            "IAM-SES-001"
+          ],
+          "requirements": [
+            {
+              "id": "FR-AUT-003-1",
+              "statement": "The system must expose the existing login, signup, pending activation, suspended, expired credentials and password recovery states through Falcone contracts."
+            },
+            {
+              "id": "FR-AUT-003-2",
+              "statement": "Password resets must use expiring single-use secrets and revoke affected sessions according to the documented recovery policy."
+            }
+          ],
+          "acceptance": [
+            "Recovery does not reveal whether an address exists and cannot downgrade administrator MFA.",
+            "Email delivery uses a retryable outbox with redacted payload handling and no credential leakage in URLs or logs.",
+            "Console tests cover stale links, expired sessions, resumed navigation and accessible keyboard-driven login and recovery."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "IAM-SES",
+      "category": "ses",
+      "title": "OIDC, OAuth and sessions",
+      "outcome": "Issue audience-bound credentials and manage their complete lifecycle.",
+      "stories": [
+        {
+          "id": "IAM-SES-001",
+          "title": "Implement standards-based authorization and token endpoints",
+          "description": "OIDC discovery and authorization-code flows.",
+          "story": "As an application developer, I want OIDC discovery and authorization-code flows, so that Falcone and external clients can authenticate consistently.",
+          "phase": "P1",
+          "effort": "L",
+          "dependencies": [
+            "IAM-CON-003",
+            "IAM-IDN-001",
+            "IAM-KEY-001"
+          ],
+          "requirements": [
+            {
+              "id": "FR-SES-001-1",
+              "statement": "The system must provide OIDC discovery, JWKS, authorization, token and user-info endpoints for explicitly configured platform and tenant issuers."
+            },
+            {
+              "id": "FR-SES-001-2",
+              "statement": "Public clients must use authorization code with PKCE S256, exact registered redirects and state/nonce validation; implicit and password grants must be disabled."
+            }
+          ],
+          "acceptance": [
+            "Clients cannot select another tenant by untrusted headers or arbitrary issuer URLs; issuer metadata and redirect allowlists are validated.",
+            "Access tokens validate issuer, audience, allowed algorithm, expiry and token purpose; ID tokens are rejected by resource APIs.",
+            "Authenticated confidential clients and public clients use distinct policies; consent is scoped, revocable and cannot expand requested permissions."
+          ]
+        },
+        {
+          "id": "IAM-SES-002",
+          "title": "Implement refresh rotation and session APIs",
+          "description": "Inspectable sessions with safe refresh and logout.",
+          "story": "As an end user, I want inspectable sessions with safe refresh and logout, so that I can control signed-in devices.",
+          "phase": "P1",
+          "effort": "L",
+          "dependencies": [
+            "IAM-SES-001"
+          ],
+          "requirements": [
+            {
+              "id": "FR-SES-002-1",
+              "statement": "The system must rotate refresh tokens atomically, persist only protected token representations and invalidate a token family on confirmed reuse."
+            },
+            {
+              "id": "FR-SES-002-2",
+              "statement": "The system must preserve Falcone session refresh/logout behavior and allow authorized users to list and revoke their sessions."
+            }
+          ],
+          "acceptance": [
+            "Concurrent refresh requests have a documented single-winner or bounded safe retry behavior; no indefinite reuse grace window exists.",
+            "Session idle and absolute lifetimes are enforced independently; refresh checks current membership, credential version and account status.",
+            "Console refresh failure clears authenticated state and returns to login; logout distinguishes local client, session and global-account revocation."
+          ]
+        },
+        {
+          "id": "IAM-SES-003",
+          "title": "Implement token status and bounded authorization freshness",
+          "description": "Explicit token-status and authorization freshness semantics.",
+          "story": "As a resource service owner, I want explicit token-status and authorization freshness semantics, so that local validation does not hide revocation.",
+          "phase": "P1",
+          "effort": "L",
+          "dependencies": [
+            "IAM-SES-002",
+            "IAM-RBAC-002"
+          ],
+          "requirements": [
+            {
+              "id": "FR-SES-003-1",
+              "statement": "The system must expose authenticated introspection and revocation interfaces and define a measurable freshness bound for every enforcement surface."
+            },
+            {
+              "id": "FR-SES-003-2",
+              "statement": "Authorization decisions must return the effective policy revision and refuse a minimum revision that cannot be satisfied."
+            }
+          ],
+          "acceptance": [
+            "JWT signature verification alone is never documented as immediate revocation; online and offline validation profiles have distinct limits.",
+            "Protected operations reject expired freshness leases when IAM or projection state is unavailable.",
+            "Tests revoke a credential, change a role and isolate the event broker, then verify each consumer honors its declared bound."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "IAM-RBAC",
+      "category": "rbac",
+      "title": "Falcone permissions and policy decisions",
+      "outcome": "Unify enforcement around Falcone roles, scopes and resource context.",
+      "stories": [
+        {
+          "id": "IAM-RBAC-001",
+          "title": "Implement the canonical role catalog and custom roles",
+          "description": "Falcone roles and bounded custom roles.",
+          "story": "As a tenant administrator, I want Falcone roles and bounded custom roles, so that I can delegate only permissions I control.",
+          "phase": "P1",
+          "effort": "L",
+          "dependencies": [
+            "IAM-CON-002",
+            "IAM-IDN-001"
+          ],
+          "requirements": [
+            {
+              "id": "FR-RBAC-001-1",
+              "statement": "The system must preserve the approved platform, tenant and workspace roles and resource/action permission matrix from Falcone internal contracts."
+            },
+            {
+              "id": "FR-RBAC-001-2",
+              "statement": "Custom role creation and assignment must enforce namespace, scope, reserved-name and subset-of-delegable-permissions constraints."
+            }
+          ],
+          "acceptance": [
+            "Tests cover platform, tenant and workspace scope plus custom: prefix validation and cross-tenant role collisions.",
+            "Role edits are versioned and emit effective-permission recalculation events; stale writers receive a conflict.",
+            "An administrator cannot grant platform privileges or a permission beyond their authorized delegation set, including through nested membership."
+          ]
+        },
+        {
+          "id": "IAM-RBAC-002",
+          "title": "Implement authorization decisions and batch checks",
+          "description": "One explainable permission-check contract.",
+          "story": "As a backend developer, I want one explainable permission-check contract, so that all Falcone APIs enforce the same rules.",
+          "phase": "P1",
+          "effort": "L",
+          "dependencies": [
+            "IAM-RBAC-001"
+          ],
+          "requirements": [
+            {
+              "id": "FR-RBAC-002-1",
+              "statement": "The system must evaluate trusted actor, tenant, workspace, action, resource, scopes and delegation context with deny-by-default behavior."
+            },
+            {
+              "id": "FR-RBAC-002-2",
+              "statement": "Single and batch authorization APIs must return Falcone decision IDs, effect, reason, matched policies, effective roles and correlation context."
+            }
+          ],
+          "acceptance": [
+            "Missing context, cross-tenant resources, insufficient scopes and invalid delegation produce the existing normalized error categories.",
+            "Resource ownership comes from authoritative service metadata; callers cannot authorize by supplying a forged owner or tenant field.",
+            "A golden suite verifies role grants intersect with client scopes and delegated authority, explicit denies win, and plan limits never grant access."
+          ]
+        },
+        {
+          "id": "IAM-RBAC-003",
+          "title": "Implement bounded conditions and data authorization projections",
+          "description": "Versioned authorization projections.",
+          "story": "As a data service owner, I want versioned authorization projections, so that resource filtering stays consistent with permission checks.",
+          "phase": "P2",
+          "effort": "L",
+          "dependencies": [
+            "IAM-RBAC-002",
+            "IAM-REV-001"
+          ],
+          "requirements": [
+            {
+              "id": "FR-RBAC-003-1",
+              "statement": "The system must publish scoped projections for data, function, event and storage consumers with version and delegation context."
+            },
+            {
+              "id": "FR-RBAC-003-2",
+              "statement": "Conditional policies must use a bounded approved schema with deterministic evaluation and explicit missing-attribute behavior."
+            }
+          ],
+          "acceptance": [
+            "No tenant-supplied code executes inside IAM; policy limits reject recursive or oversized rule sets.",
+            "List and read queries are filtered before pagination and counts are computed, preventing unauthorized existence disclosure.",
+            "PostgreSQL RLS and document-store enforcement receive equivalent tenant/workspace scope; a broad API-level allow cannot disable row filtering."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "IAM-MAC",
+      "category": "mac",
+      "title": "Machine identities and delegated execution",
+      "outcome": "Give services, functions and workflows narrowly scoped renewable credentials.",
+      "stories": [
+        {
+          "id": "IAM-MAC-001",
+          "title": "Implement service accounts and API-key lifecycle",
+          "description": "Scoped service accounts and rotatable API credentials.",
+          "story": "As a workspace administrator, I want scoped service accounts and rotatable API credentials, so that automation does not use human accounts.",
+          "phase": "P1",
+          "effort": "L",
+          "dependencies": [
+            "IAM-IDN-001",
+            "IAM-RBAC-002",
+            "IAM-KEY-001"
+          ],
+          "requirements": [
+            {
+              "id": "FR-MAC-001-1",
+              "statement": "The system must create, disable, rotate and revoke service-account credentials with tenant/workspace, scope and audience restrictions."
+            },
+            {
+              "id": "FR-MAC-001-2",
+              "statement": "API-key secrets must be shown only at issuance and stored as non-recoverable verifiers with a public identifier for lookup."
+            }
+          ],
+          "acceptance": [
+            "Client-credentials tokens use a distinct machine principal type and cannot impersonate a human subject.",
+            "Rotation supports a bounded overlap policy and revokes the correct credential version even for identically named clients in different tenants.",
+            "Credential use and failures are auditable without exposing secrets; unknown or deleted credential state is denied."
+          ]
+        },
+        {
+          "id": "IAM-MAC-002",
+          "title": "Implement scoped delegation for functions and workflows",
+          "description": "Short-lived delegated capabilities for activities.",
+          "story": "As a workflow author, I want short-lived delegated capabilities for activities, so that long-running work never stores a broad user token.",
+          "phase": "P2",
+          "effort": "L",
+          "dependencies": [
+            "IAM-MAC-001",
+            "IAM-SES-003"
+          ],
+          "requirements": [
+            {
+              "id": "FR-MAC-002-1",
+              "statement": "Delegated credentials must identify actor and subject, restrict resource audience and intersect all parent scopes and tenant/workspace boundaries."
+            },
+            {
+              "id": "FR-MAC-002-2",
+              "statement": "Serverless and workflow execution must renew authorized machine credentials without persisting human refresh tokens in runtime payloads or histories."
+            }
+          ],
+          "acceptance": [
+            "Preserve current function invocation signature, audience, body binding and maximum lifetime until a versioned replacement contract is qualified.",
+            "A workflow paused beyond access-token expiry resumes only after fresh authorization; removed membership cannot be recovered by replaying history.",
+            "The adapter rejects delegation loops and excessive depth, binds callbacks to execution identity, and tests cancellation and permission loss in current and future runtimes."
+          ]
+        },
+        {
+          "id": "IAM-MAC-003",
+          "title": "Implement application client authentication and workload trust",
+          "description": "Explicit machine authentication policies.",
+          "story": "As a platform operator, I want explicit machine authentication policies, so that service-to-service trust is independent of network location.",
+          "phase": "P2",
+          "effort": "L",
+          "dependencies": [
+            "IAM-MAC-001",
+            "IAM-SES-001"
+          ],
+          "requirements": [
+            {
+              "id": "FR-MAC-003-1",
+              "statement": "The system must support authenticated confidential clients with policy-controlled secret rotation and an asymmetric client-authentication option."
+            },
+            {
+              "id": "FR-MAC-003-2",
+              "statement": "Workload identity exchange must verify an allowlisted issuer, audience and subject binding before issuing a Falcone credential."
+            }
+          ],
+          "acceptance": [
+            "Qualify private_key_jwt and document optional mTLS; require short assertions, unique identifiers and replay checks.",
+            "Kubernetes service-account exchange, if enabled, binds namespace and service account and rejects arbitrary external JWTs.",
+            "No privileged daemon, runtime sandbox or cluster-wide operator is required for the baseline IAM service."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "IAM-FED",
+      "category": "fed",
+      "title": "Federation, external applications and MCP",
+      "outcome": "Integrate enterprise identity and application access through Falcone controls.",
+      "stories": [
+        {
+          "id": "IAM-FED-001",
+          "title": "Implement external OIDC federation",
+          "description": "An allowlisted upstream identity provider.",
+          "story": "As an enterprise tenant administrator, I want an allowlisted upstream identity provider, so that employees can use their existing corporate identity.",
+          "phase": "P2",
+          "effort": "L",
+          "dependencies": [
+            "IAM-SES-001",
+            "IAM-IDN-001"
+          ],
+          "requirements": [
+            {
+              "id": "FR-FED-001-1",
+              "statement": "The system must support tenant-scoped upstream OIDC providers with validated issuer, signing keys, redirects and claim mappings."
+            },
+            {
+              "id": "FR-FED-001-2",
+              "statement": "Federated login must map verified external subjects to explicit Falcone memberships without granting privileges from untrusted group names."
+            }
+          ],
+          "acceptance": [
+            "Tests cover issuer mix-up, key rotation, malicious discovery URLs, provider outage and callback replay.",
+            "JIT provisioning is explicitly enabled per tenant and cannot create an owner or platform role implicitly.",
+            "Administrative provider changes require step-up and audit; failed federation has a documented recovery path."
+          ]
+        },
+        {
+          "id": "IAM-FED-002",
+          "title": "Qualify enterprise SAML and directory lifecycle needs",
+          "description": "An explicit federation compatibility matrix.",
+          "story": "As an enterprise integrator, I want an explicit federation compatibility matrix, so that existing enterprise connections are not lost at migration.",
+          "phase": "P0",
+          "effort": "M",
+          "dependencies": [
+            "IAM-CON-001"
+          ],
+          "requirements": [
+            {
+              "id": "FR-FED-002-1",
+              "statement": "The project must inventory actual use of SAML, LDAP/AD and directory provisioning before approving Keycloak retirement."
+            },
+            {
+              "id": "FR-FED-002-2",
+              "statement": "Every in-use enterprise integration must have a tested replacement or remain on an explicitly supported migration bridge."
+            }
+          ],
+          "acceptance": [
+            "Distinguish SAML declared in Falcone adapters from live integrations; verify inbound federation versus outbound application SSO requirements.",
+            "Record implementation stories and fixtures for every required SAML or SCIM profile; optional connectors remain disabled until qualified.",
+            "Validate subject mapping, deprovisioning latency and account-linking behavior with a representative corporate provider."
+          ]
+        },
+        {
+          "id": "IAM-FED-003",
+          "title": "Implement external application and MCP registration",
+          "description": "Falcone-controlled client registration and tool scopes.",
+          "story": "As an application owner, I want Falcone-controlled client registration and tool scopes, so that applications get only approved capabilities.",
+          "phase": "P2",
+          "effort": "L",
+          "dependencies": [
+            "IAM-FED-001",
+            "IAM-RBAC-002",
+            "IAM-MAC-001"
+          ],
+          "requirements": [
+            {
+              "id": "FR-FED-003-1",
+              "statement": "External application and MCP clients must use Falcone tenant/workspace registration policies, redirect validation and existing plan limits."
+            },
+            {
+              "id": "FR-FED-003-2",
+              "statement": "MCP authorization must enforce the approved mcp:<server>:<tool> scope mapping and resource audience at each tool invocation."
+            }
+          ],
+          "acceptance": [
+            "Preserve the curated registration and supported application-template contracts rather than exposing unrestricted provider-admin APIs.",
+            "Pin the actual MCP authorization specification and tested client transports; do not assume WebSockets define MCP authorization semantics.",
+            "Consent, credential rotation, registration abuse, tool-scope removal and cross-server token replay have integration tests."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "IAM-KEY",
+      "category": "key",
+      "title": "Keys, secrets and bootstrap trust",
+      "outcome": "Protect signing material and make rotation and emergency recovery explicit.",
+      "stories": [
+        {
+          "id": "IAM-KEY-001",
+          "title": "Implement managed signing keys and JWKS rotation",
+          "description": "Managed key custody and tested rotation.",
+          "story": "As a security operator, I want managed key custody and tested rotation, so that token verification remains safe during normal and emergency changes.",
+          "phase": "P1",
+          "effort": "L",
+          "dependencies": [
+            "IAM-CON-003"
+          ],
+          "requirements": [
+            {
+              "id": "FR-KEY-001-1",
+              "statement": "The system must store signing material and sensitive recoverable secrets using approved OpenBao/KMS-backed protection with least-privilege access."
+            },
+            {
+              "id": "FR-KEY-001-2",
+              "statement": "Key rotation must publish new public keys before use, retain required verification overlap and support emergency compromise handling."
+            }
+          ],
+          "acceptance": [
+            "Select a proven remote-signing or encrypted-key adapter and document private-key exposure in process memory; never claim non-exportability for an exported key.",
+            "JWKS caches are keyed by trusted issuer, key ID and algorithm; unknown key storms are rate-limited and cannot trigger arbitrary URL fetches.",
+            "Rotation tests cover mixed replicas, rolling upgrades, expired cache, compromise and recovery; private keys never appear in images, git or logs."
+          ]
+        },
+        {
+          "id": "IAM-KEY-002",
+          "title": "Implement first-owner bootstrap and break-glass recovery",
+          "description": "Audited bootstrap and emergency procedures.",
+          "story": "As a platform operator, I want audited bootstrap and emergency procedures, so that the platform can be recovered without a default privileged account.",
+          "phase": "P1",
+          "effort": "M",
+          "dependencies": [
+            "IAM-KEY-001",
+            "IAM-RBAC-001"
+          ],
+          "requirements": [
+            {
+              "id": "FR-KEY-002-1",
+              "statement": "Initial privileged ownership must be created through a one-time authenticated bootstrap process that becomes unavailable after completion."
+            },
+            {
+              "id": "FR-KEY-002-2",
+              "statement": "Emergency access must have explicit scope, expiry, strong authentication and an immutable audit trail."
+            }
+          ],
+          "acceptance": [
+            "Concurrent bootstrap attempts create at most one initial owner; installations ship without a default admin password.",
+            "Recovery requires designated custodians and an approved operator procedure; it cannot be invoked by a tenant.",
+            "Run a locked-out-administrator exercise and rotate the bootstrap or emergency material afterward."
+          ]
+        },
+        {
+          "id": "IAM-KEY-003",
+          "title": "Implement secret references and credential export boundaries",
+          "description": "Scoped secret references.",
+          "story": "As a service integrator, I want scoped secret references, so that tenant credentials do not leak through workflow or provisioning payloads.",
+          "phase": "P2",
+          "effort": "M",
+          "dependencies": [
+            "IAM-KEY-001",
+            "IAM-MAC-001"
+          ],
+          "requirements": [
+            {
+              "id": "FR-KEY-003-1",
+              "statement": "IAM and adapters must reference recoverable backend credentials through scoped secret handles rather than plaintext event or workflow payloads."
+            },
+            {
+              "id": "FR-KEY-003-2",
+              "statement": "Export and backup functions must enforce separate permissions for identity metadata, password verifiers and recoverable key material."
+            }
+          ],
+          "acceptance": [
+            "LLM BYOK, S3 credentials and federation secrets use explicit custodians and tenant-bound access policies.",
+            "A secret-reference consumer rechecks authorization and version; it cannot dereference a different tenant or stale revoked credential.",
+            "Backup and diagnostic exports are redacted by default and are tested for token, password and private-key leakage."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "IAM-INT",
+      "category": "int",
+      "title": "Falcone service integrations",
+      "outcome": "Enforce the same identity model across every current and planned Falcone subsystem.",
+      "stories": [
+        {
+          "id": "IAM-INT-001",
+          "title": "Integrate APISIX, control planes, consoles and SDKs",
+          "description": "Consistent authentication across Falcone entry points.",
+          "story": "As a Falcone user, I want consistent authentication across Falcone entry points, so that existing API and console workflows continue to work.",
+          "phase": "P2",
+          "effort": "L",
+          "dependencies": [
+            "IAM-SES-003",
+            "IAM-RBAC-002",
+            "IAM-AUT-003"
+          ],
+          "requirements": [
+            {
+              "id": "FR-INT-001-1",
+              "statement": "APISIX and Falcone backends must validate configured issuers and audiences and strip caller-controlled identity-context headers."
+            },
+            {
+              "id": "FR-INT-001-2",
+              "statement": "Both control-plane paths, both consoles and supported SDKs must pass the approved login, refresh, authorization and error compatibility fixtures."
+            }
+          ],
+          "acceptance": [
+            "Authenticated downstream context is mandatory in production; gateway trust secrets or authenticated transport are rotated and tenant headers cannot bypass validation.",
+            "Direct access to backends with forged roles or missing attestation fails; gateway success does not bypass resource authorization.",
+            "Document each approved API-key route and its stored authoritative scope; preserve existing sessionStorage behavior only during the explicit console migration window."
+          ]
+        },
+        {
+          "id": "IAM-INT-002",
+          "title": "Integrate data services, object storage and secret access",
+          "description": "Consistent data and storage permissions.",
+          "story": "As a workspace owner, I want consistent data and storage permissions, so that credentials cannot access adjacent workspaces or buckets.",
+          "phase": "P2",
+          "effort": "L",
+          "dependencies": [
+            "IAM-RBAC-003",
+            "IAM-KEY-003"
+          ],
+          "requirements": [
+            {
+              "id": "FR-INT-002-1",
+              "statement": "Data and storage adapters must enforce scoped authorization on both credential issuance and resource use, including direct protocol access."
+            },
+            {
+              "id": "FR-INT-002-2",
+              "statement": "SeaweedFS identity projections must preserve per-bucket privilege isolation and expose rotation, revocation and reconciliation status."
+            }
+          ],
+          "acceptance": [
+            "PostgreSQL RLS, pooled connection context and FerretDB/document filtering are tested for cross-tenant leakage and connection reuse.",
+            "S3 tests prove an identity cannot accumulate grants to another bucket; presigned URL expiry and direct credential limitations are documented.",
+            "OpenBao secret access, LLM BYOK and provisioning adapters honor actor, resource scope and audit context; unsupported backend revocation is surfaced rather than claimed complete."
+          ]
+        },
+        {
+          "id": "IAM-INT-003",
+          "title": "Integrate eventing, realtime and execution services",
+          "description": "Identity propagation across asynchronous work.",
+          "story": "As a Falcone application developer, I want identity propagation across asynchronous work, so that events and executions remain attributable and authorized.",
+          "phase": "P2",
+          "effort": "L",
+          "dependencies": [
+            "IAM-MAC-002",
+            "IAM-REV-002"
+          ],
+          "requirements": [
+            {
+              "id": "FR-INT-003-1",
+              "statement": "Kafka/event ingress, realtime gateways and webhooks must preserve verified actor and tenant/workspace context without treating it as an unrestricted bearer credential."
+            },
+            {
+              "id": "FR-INT-003-2",
+              "statement": "Current Temporal/Knative and future falcone-workflow/falcone-serverless adapters must implement the same versioned delegation and revocation contract."
+            }
+          ],
+          "acceptance": [
+            "Test publish, consume, subscribe, callback and retry paths with expired, revoked and cross-tenant credentials.",
+            "WebSocket upgrade, subscription and periodic revalidation use current authorization; permission loss suspends or disconnects affected access.",
+            "Workflow event histories and function logs contain references and correlation IDs, never broad session tokens; replayed events cannot regain revoked rights."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "IAM-REV",
+      "category": "rev",
+      "title": "Revocation and durable propagation",
+      "outcome": "Make permission changes observable, ordered and bounded across distributed consumers.",
+      "stories": [
+        {
+          "id": "IAM-REV-001",
+          "title": "Implement transactional outbox and projection workers",
+          "description": "Durable versioned identity events.",
+          "story": "As an operator, I want durable versioned identity events, so that a broker outage cannot silently lose security changes.",
+          "phase": "P1",
+          "effort": "L",
+          "dependencies": [
+            "IAM-IDN-001",
+            "IAM-RBAC-001"
+          ],
+          "requirements": [
+            {
+              "id": "FR-REV-001-1",
+              "statement": "Every security-state mutation must atomically persist its event in an outbox and deliver it with at-least-once semantics."
+            },
+            {
+              "id": "FR-REV-001-2",
+              "statement": "Projection consumers must be idempotent, reject obsolete versions and expose applied revision and reconciliation state."
+            }
+          ],
+          "acceptance": [
+            "Crash tests cover before commit, after commit, after publish and before acknowledgement without event loss or duplicate effects.",
+            "Tenant-scoped aggregate sequence numbers prevent stale role or credential resurrection after out-of-order delivery.",
+            "Retries have bounded backoff, dead-letter handling and an audited replay tool; periodic reconciliation repairs missed projections."
+          ]
+        },
+        {
+          "id": "IAM-REV-002",
+          "title": "Implement revocation fan-out and long-lived connection handling",
+          "description": "Measurable revocation progress.",
+          "story": "As a tenant administrator, I want measurable revocation progress, so that suspended identities stop using Falcone services within declared bounds.",
+          "phase": "P2",
+          "effort": "L",
+          "dependencies": [
+            "IAM-SES-003",
+            "IAM-REV-001"
+          ],
+          "requirements": [
+            {
+              "id": "FR-REV-002-1",
+              "statement": "Revocation must target sessions, refresh families, service credentials, authorization caches and registered backend projections with per-surface status."
+            },
+            {
+              "id": "FR-REV-002-2",
+              "statement": "Long-lived connections and executions must revalidate authorization on a bounded schedule and on sensitive operations."
+            }
+          ],
+          "acceptance": [
+            "Measure the proposed 30-second online revocation bound with a healthy network and test stale-lease denial during outages.",
+            "WebSocket reconnection cannot restore a revoked subscription; DB session cleanup and S3 credential projection are reported independently.",
+            "A revocation response distinguishes authoritative commit, downstream completion and irreversible already-delivered data or external effects."
+          ]
+        },
+        {
+          "id": "IAM-REV-003",
+          "title": "Implement tenant suspension, deletion and retention workflows",
+          "description": "Recoverable tenant offboarding.",
+          "story": "As a platform administrator, I want recoverable tenant offboarding, so that removing a tenant cannot leave usable credentials behind.",
+          "phase": "P2",
+          "effort": "L",
+          "dependencies": [
+            "IAM-REV-002",
+            "IAM-IDN-002"
+          ],
+          "requirements": [
+            {
+              "id": "FR-REV-003-1",
+              "statement": "Tenant suspension must deny new authorization before asynchronous cleanup begins and expose cleanup progress through Falcone APIs."
+            },
+            {
+              "id": "FR-REV-003-2",
+              "statement": "Deletion must follow configurable retention, legal-hold and tombstone rules without reusing principal or tenant identifiers."
+            }
+          ],
+          "acceptance": [
+            "Inventory and invalidate clients, keys, memberships, secret references and backend projections before declaring offboarding complete.",
+            "Repeated cleanup is safe after process crashes; a delayed event cannot recreate a deleted account or tenant.",
+            "Restore and retention tests verify deleted identities are not reactivated unintentionally; destructive final deletion requires the approved product workflow."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "IAM-AUD",
+      "category": "aud",
+      "title": "Audit, privacy and support visibility",
+      "outcome": "Explain access decisions without exposing credentials or cross-tenant personal data.",
+      "stories": [
+        {
+          "id": "IAM-AUD-001",
+          "title": "Implement security audit events and decision correlation",
+          "description": "Searchable correlated security events.",
+          "story": "As a security analyst, I want searchable correlated security events, so that I can reconstruct changes and access decisions.",
+          "phase": "P1",
+          "effort": "M",
+          "dependencies": [
+            "IAM-CON-002",
+            "IAM-REV-001"
+          ],
+          "requirements": [
+            {
+              "id": "FR-AUD-001-1",
+              "statement": "The system must audit authentication, credential, membership, role, key and administrative changes with actor, tenant, outcome, revision and correlation ID."
+            },
+            {
+              "id": "FR-AUD-001-2",
+              "statement": "Audit access and export must be separately authorized and must redact secrets and unnecessary personal information."
+            }
+          ],
+          "acceptance": [
+            "Security-state audit records are committed with mutations and cannot be edited by tenant administrators.",
+            "Measure delivery completeness; security mutations fail safely if durable audit acceptance is unavailable.",
+            "Trace a login, API call, workflow delegation and S3 issuance end-to-end without storing bearer tokens."
+          ]
+        },
+        {
+          "id": "IAM-AUD-002",
+          "title": "Implement authorized access explanations and privacy controls",
+          "description": "Scoped explanations and retention settings.",
+          "story": "As a tenant auditor, I want scoped explanations and retention settings, so that support can diagnose denial without broad data access.",
+          "phase": "P2",
+          "effort": "M",
+          "dependencies": [
+            "IAM-AUD-001",
+            "IAM-RBAC-002"
+          ],
+          "requirements": [
+            {
+              "id": "FR-AUD-002-1",
+              "statement": "The system must expose authorized decision explanations that redact policies and resources outside the caller scope."
+            },
+            {
+              "id": "FR-AUD-002-2",
+              "statement": "Identity and audit data must have configurable retention, export and erasure behavior with documented legal-hold exceptions."
+            }
+          ],
+          "acceptance": [
+            "Explain endpoints cannot enumerate another tenant or expose secret attributes through denial reasons.",
+            "Access to audit exports is logged and paginated exports remain scope-filtered.",
+            "Minimize profile attributes and distinguish pseudonymized immutable audit history from erasable profile data; retention is approved before production."
+          ]
+        },
+        {
+          "id": "IAM-AUD-003",
+          "title": "Implement audit export and operational dashboards",
+          "description": "Metrics and reliable security-event export.",
+          "story": "As an on-call engineer, I want metrics and reliable security-event export, so that I can detect abuse and failed propagation.",
+          "phase": "P2",
+          "effort": "M",
+          "dependencies": [
+            "IAM-AUD-001",
+            "IAM-OPS-002"
+          ],
+          "requirements": [
+            {
+              "id": "FR-AUD-003-1",
+              "statement": "The system must export structured logs, metrics and traces using Falcone observability conventions without unbounded user-ID metric labels."
+            },
+            {
+              "id": "FR-AUD-003-2",
+              "statement": "The system must provide authenticated audit export and alerts for abuse, key failure, authorization errors and projection lag."
+            }
+          ],
+          "acceptance": [
+            "Dashboards separate expected denies from service errors and report issuer, endpoint and latency class with bounded cardinality.",
+            "SIEM delivery retries preserve event IDs and do not duplicate logical records at an idempotent consumer.",
+            "Exercise alerts for stalled outbox, lost signing access, refresh reuse and unusual administrative grants with linked runbooks."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "IAM-OPS",
+      "category": "ops",
+      "title": "Deployment, reliability and ownership",
+      "outcome": "Operate IAM under restricted Kubernetes and OpenShift permissions.",
+      "stories": [
+        {
+          "id": "IAM-OPS-001",
+          "title": "Package restricted namespace deployments",
+          "description": "Reproducible least-privilege manifests.",
+          "story": "As a platform operator, I want reproducible least-privilege manifests, so that IAM runs in corporate OpenShift and vanilla Kubernetes.",
+          "phase": "P1",
+          "effort": "M",
+          "dependencies": [
+            "IAM-CON-003",
+            "IAM-KEY-001"
+          ],
+          "requirements": [
+            {
+              "id": "FR-OPS-001-1",
+              "statement": "The baseline deployment must run with arbitrary non-root UID, dropped capabilities, read-only root filesystem and no privileged or host access."
+            },
+            {
+              "id": "FR-OPS-001-2",
+              "statement": "Installation must use ordinary namespaced workloads without requiring a custom operator, CRDs, cluster-admin or a sandbox runtime."
+            }
+          ],
+          "acceptance": [
+            "Document the prerequisite PostgreSQL, OpenBao, Kafka, TLS, network and backup services and their actual operator-owned permissions.",
+            "Qualify two supported Kubernetes minors and the administrator-confirmed OpenShift build; a Kubernetes patch number alone is not an OpenShift support matrix.",
+            "Multiple replicas, readiness/liveness, graceful shutdown, network policies, disruption budgets and migration jobs pass rollout tests."
+          ]
+        },
+        {
+          "id": "IAM-OPS-002",
+          "title": "Benchmark and define service objectives",
+          "description": "Measured IAM capacity and availability objectives.",
+          "story": "As a product owner, I want measured IAM capacity and availability objectives, so that capacity planning matches identity traffic.",
+          "phase": "P0",
+          "effort": "M",
+          "dependencies": [
+            "IAM-CON-001"
+          ],
+          "requirements": [
+            {
+              "id": "FR-OPS-002-1",
+              "statement": "The project must benchmark token issuance, password login, authorization checks, refresh, key lookup and revocation separately."
+            },
+            {
+              "id": "FR-OPS-002-2",
+              "statement": "The project must define availability, latency, recovery and freshness objectives with a documented workload, topology and measurement boundary."
+            }
+          ],
+          "acceptance": [
+            "Use the provisional objectives in operations.md as hypotheses; record hardware, policy size, cache hit rate, tenant skew and failure mode.",
+            "Do not equate prior 100k event messages per second or 10k deployed functions with login or token issuance rate.",
+            "Test noisy-neighbor limits, broker failure and database failover; revise objectives and sizing from results before making an SLA commitment."
+          ]
+        },
+        {
+          "id": "IAM-OPS-003",
+          "title": "Implement recovery, upgrade and on-call procedures",
+          "description": "Tested restoration and upgrades with named owners.",
+          "story": "As an SRE, I want tested restoration and upgrades with named owners, so that IAM failures do not lock out the platform indefinitely.",
+          "phase": "P2",
+          "effort": "L",
+          "dependencies": [
+            "IAM-OPS-001",
+            "IAM-REV-002",
+            "IAM-AUD-001"
+          ],
+          "requirements": [
+            {
+              "id": "FR-OPS-003-1",
+              "statement": "The service must provide tested backup, restore, schema migration and rollback procedures covering identity state, key access and revocation state."
+            },
+            {
+              "id": "FR-OPS-003-2",
+              "statement": "Production release must name runtime maintainers, on-call responders, security qualification owners and product decision owners."
+            }
+          ],
+          "acceptance": [
+            "Restore from PostgreSQL and managed-key backups in isolation; rotate a recovery epoch or invalidate sessions to prevent restored stale tokens becoming valid.",
+            "Prove backward-compatible rolling migrations and define the stop point for irreversible schema or credential changes.",
+            "Run incident exercises for IdP outage, compromised signing key, stolen refresh family and lost database quorum with measured recovery times."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "IAM-MIG",
+      "category": "mig",
+      "title": "Keycloak migration and retirement",
+      "outcome": "Move by tenant and issuer while retaining explicit rollback and compatibility gates.",
+      "stories": [
+        {
+          "id": "IAM-MIG-001",
+          "title": "Build a migration inventory and dry-run importer",
+          "description": "Repeatable identity and client mapping.",
+          "story": "As a migration engineer, I want repeatable identity and client mapping, so that the cutover has measurable coverage.",
+          "phase": "P1",
+          "effort": "L",
+          "dependencies": [
+            "IAM-CON-001",
+            "IAM-IDN-001",
+            "IAM-FED-002"
+          ],
+          "requirements": [
+            {
+              "id": "FR-MIG-001-1",
+              "statement": "Migration tooling must dry-run and report users, issuer-subject mappings, memberships, roles, clients, federation and credential portability without modifying production."
+            },
+            {
+              "id": "FR-MIG-001-2",
+              "statement": "The importer must be idempotent, tenant-scoped and produce reconciled counts and a report of unsupported or conflicting objects."
+            }
+          ],
+          "acceptance": [
+            "Validate actual Keycloak deployment versions and enabled extensions; never assume all declared adapter versions are deployed.",
+            "Determine password-hash portability by algorithm and parameters; unsupported credentials require a controlled reset or approved bridge, never plaintext export.",
+            "Classify sessions, MFA secrets, WebAuthn RP IDs and signing keys independently; do not claim seamless portability for all of them."
+          ]
+        },
+        {
+          "id": "IAM-MIG-002",
+          "title": "Implement dual-issuer shadow checks and tenant canaries",
+          "description": "A reversible staged migration.",
+          "story": "As a rollout owner, I want a reversible staged migration, so that behavior differences are found before all tenants move.",
+          "phase": "P3",
+          "effort": "L",
+          "dependencies": [
+            "IAM-MIG-001",
+            "IAM-INT-001",
+            "IAM-INT-002",
+            "IAM-INT-003",
+            "IAM-DEV-003"
+          ],
+          "requirements": [
+            {
+              "id": "FR-MIG-002-1",
+              "statement": "Migration mode must explicitly allowlist old and new issuers, audiences and principal mappings without accepting arbitrary token sources."
+            },
+            {
+              "id": "FR-MIG-002-2",
+              "statement": "Tenant canaries must compare authorization outcomes and projection completion before switching the authoritative writer."
+            }
+          ],
+          "acceptance": [
+            "Shadow checks produce no duplicate grants, user mutations or external side effects; mismatches are classified and approved.",
+            "Canary gates cover login, refresh, custom roles, federation, S3, DB, events, MCP, workflows and serverless; native Keycloak passthrough usage is inventoried.",
+            "Rollback reconciles post-cutover membership and credential changes; it is not an unconditional database snapshot restore."
+          ]
+        },
+        {
+          "id": "IAM-MIG-003",
+          "title": "Retire Keycloak after compatibility and security gates",
+          "description": "A controlled retirement checklist.",
+          "story": "As a Falcone product owner, I want a controlled retirement checklist, so that the custom service becomes the supported IAM implementation.",
+          "phase": "P3",
+          "effort": "M",
+          "dependencies": [
+            "IAM-MIG-002",
+            "IAM-OPS-003"
+          ],
+          "requirements": [
+            {
+              "id": "FR-MIG-003-1",
+              "statement": "Keycloak retirement must require signed-off compatibility, security, recovery and operational readiness evidence for every in-use integration."
+            },
+            {
+              "id": "FR-MIG-003-2",
+              "statement": "Retirement must revoke obsolete credentials and trust entries, archive required audit evidence and remove approved legacy routes."
+            }
+          ],
+          "acceptance": [
+            "Observe a defined rollback window and confirm no unsupported client or enterprise connector remains.",
+            "Explicitly retire or document operator-only /_native/keycloak paths; do not promise raw Keycloak Admin API compatibility.",
+            "Record owners, runbook locations, residual exceptions and support policy; removing Keycloak is a separate authorized deployment change."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "IAM-DEV",
+      "category": "dev",
+      "title": "Developer experience and release qualification",
+      "outcome": "Make integrations testable and releases reviewable before production trust changes.",
+      "stories": [
+        {
+          "id": "IAM-DEV-001",
+          "title": "Publish API schemas, SDK helpers and local fixtures",
+          "description": "Versioned schemas and local test identities.",
+          "story": "As an integration developer, I want versioned schemas and local test identities, so that I can build a Falcone integration without production credentials.",
+          "phase": "P1",
+          "effort": "M",
+          "dependencies": [
+            "IAM-CON-001",
+            "IAM-RBAC-002"
+          ],
+          "requirements": [
+            {
+              "id": "FR-DEV-001-1",
+              "statement": "The project must publish OpenAPI and event schemas plus TypeScript and Go integration examples for the approved contracts."
+            },
+            {
+              "id": "FR-DEV-001-2",
+              "statement": "Development fixtures must include multiple tenants, machines, custom roles, expired credentials and negative authorization cases."
+            }
+          ],
+          "acceptance": [
+            "Examples distinguish end-user tokens, machine credentials and delegated invocation tokens with correct audiences.",
+            "Local setup uses synthetic data and generated development keys and cannot enable unverified identity mode in production.",
+            "Schema compatibility checks detect breaking changes and document deprecation periods and adapter version negotiation."
+          ]
+        },
+        {
+          "id": "IAM-DEV-002",
+          "title": "Implement secure build and dependency maintenance",
+          "description": "Reproducible builds and dependency checks.",
+          "story": "As a maintainer, I want reproducible builds and dependency checks, so that IAM releases have attributable provenance.",
+          "phase": "P1",
+          "effort": "M",
+          "dependencies": [
+            "IAM-CON-003"
+          ],
+          "requirements": [
+            {
+              "id": "FR-DEV-002-1",
+              "statement": "Release builds must pin dependencies and publish an SBOM, signed image provenance and migration compatibility notes."
+            },
+            {
+              "id": "FR-DEV-002-2",
+              "statement": "The project must define security patch ownership, vulnerability reporting and dependency update qualification."
+            }
+          ],
+          "acceptance": [
+            "CI checks secrets, licenses, vulnerable dependencies and container permissions; exceptions have an owner and expiry.",
+            "Protocol-library upgrades rerun the configured conformance and regression suites.",
+            "Select an owner-approved repository license before redistributing third-party code; research references do not authorize copying proprietary extensions."
+          ]
+        },
+        {
+          "id": "IAM-DEV-003",
+          "title": "Qualify isolation, protocol security and failure behavior",
+          "description": "Adversarial and failure-injection evidence.",
+          "story": "As a security reviewer, I want adversarial and failure-injection evidence, so that Keycloak is replaced only after the new service proves its boundaries.",
+          "phase": "P2",
+          "effort": "L",
+          "dependencies": [
+            "IAM-SES-003",
+            "IAM-AUT-002",
+            "IAM-MAC-002",
+            "IAM-RBAC-003",
+            "IAM-OPS-003",
+            "IAM-DEV-002"
+          ],
+          "requirements": [
+            {
+              "id": "FR-DEV-003-1",
+              "statement": "A release candidate must pass tenant-isolation, protocol-negative, credential-replay and recovery tests against all enabled integration profiles."
+            },
+            {
+              "id": "FR-DEV-003-2",
+              "statement": "Production cutover must require independent security review of authentication, authorization, key custody and deployment configuration."
+            }
+          ],
+          "acceptance": [
+            "Threat tests cover confused deputy, forged context, OAuth mix-up, CSRF, SSRF, privilege escalation, stale grants and refresh races.",
+            "Fault tests cover replica crashes, broker partitions, delayed/out-of-order events, DB restore and key rotation with declared fail-closed behavior.",
+            "Document residual findings, remediation owners and approved exceptions; ordinary containers are not represented as a security sandbox for hostile tenant code."
+          ]
+        }
+      ]
+    }
+  ]
+}
