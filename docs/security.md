@@ -10,6 +10,8 @@ Tenant IDs, role lists and resource ownership supplied by clients are claims to 
 
 Identity and token signing are not runtime isolation. Without an approved sandbox, the serverless platform must explicitly own residual hostile-code risks, egress restrictions and node isolation. A compromised workload credential must be bounded to its audience, resource and lifetime.
 
+SAML, OIDC, LDAP/AD and SCIM are mandatory integration surfaces. Apply the [enterprise profile](enterprise-federation.md) to XML-signature validation, directory transport/bind policy and provisioning authority. External identity/group assertions cannot bypass Falcone role-delegation limits. Connector credentials and metadata changes require scoped administration and audit.
+
 ## Authentication and sessions
 
 - Use a qualified OIDC provider and maintained JOSE, password-hashing and WebAuthn implementations. Pin allowed algorithms; reject unsigned tokens, key-type confusion and unknown token purposes.
@@ -43,6 +45,8 @@ Protected writes, permission changes and secret issuance require current authori
 | Running functions/workflows | Reauthorize new sensitive operations and credential renewal; cancel where supported | Already executed external side effects cannot be undone; checkpoint/compensation is owned by execution services |
 
 The 30-second target includes transport, consumer processing and local cache lease, with clock skew accounted for; it is not 30 seconds per stage. Measure from authoritative commit to denial in each consumer. A global revoke operation returns per-target progress and exceptions. Event delivery is at least once, never marketed as exactly-once distributed revocation.
+
+For LDAP/AD and SCIM-originated changes, measure external detection/delivery delay separately from this internal bound. Configure directory synchronization freshness and provisioning outage policies explicitly; an upstream account change is not yet an authoritative Falcone commit. Removing a membership through one tenant connector must not disable unrelated tenant memberships.
 
 ## Keys, bootstrap and recovery
 

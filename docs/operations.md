@@ -35,6 +35,8 @@ The earlier request for an OpenShift version bundling Kubernetes 1.33.12 must be
 
 PostgreSQL, Kafka, OpenBao/KMS, TLS, DNS, mail delivery and backup storage remain external dependencies with named owners. A minimal-privilege IAM application does not remove the operational work needed to provide those dependencies.
 
+Mandatory SAML/OIDC connections, LDAP/AD directories and SCIM endpoints also need tenant-scoped configuration, approved network egress, trusted certificates and named connector owners. Monitor certificate expiry, synchronization checkpoints, detection lag, outbound provisioning failures and applied membership revisions. Set per-connector detection/freshness budgets in addition to internal revocation objectives; qualify corporate AD bind/signing/channel-binding policy without requiring privileged runtime access.
+
 ## Failure handling
 
 | Failure | Required behavior |

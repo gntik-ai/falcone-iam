@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "date": "2026-10-31",
+  "date": "2026-11-01",
   "baseline": "b694e45e487b1c49238e30a544fb7076fc18a7d6",
   "epics": [
     {
@@ -81,7 +81,7 @@
           ],
           "acceptance": [
             "Prototype the proposed Node.js oidc-provider adapter with PostgreSQL persistence and production key custody; compare Go/Fosite or a Hydra adapter if a mandatory feature fails.",
-            "Record supported flows, unsupported extensions, license obligations, key-signing integration and measured operational costs in an ADR.",
+            "Record supported flows, unsupported extensions, license obligations, key-signing integration and measured operational costs in an ADR; qualify separate SAML, LDAP/AD and SCIM components because the OIDC library does not implement those protocols.",
             "Passing library certification must not be represented as certification of Falcone; release requires tests of Falcone configuration and adapters."
           ]
         }
@@ -534,7 +534,7 @@
       "id": "IAM-FED",
       "category": "fed",
       "title": "Federation, external applications and MCP",
-      "outcome": "Integrate enterprise identity and application access through Falcone controls.",
+      "outcome": "Deliver mandatory SAML, OIDC, LDAP/AD and SCIM support through Falcone identity, tenant/workspace and application controls.",
       "stories": [
         {
           "id": "IAM-FED-001",
@@ -545,7 +545,8 @@
           "effort": "L",
           "dependencies": [
             "IAM-SES-001",
-            "IAM-IDN-001"
+            "IAM-IDN-001",
+            "IAM-FED-002"
           ],
           "requirements": [
             {
@@ -565,9 +566,9 @@
         },
         {
           "id": "IAM-FED-002",
-          "title": "Qualify enterprise SAML and directory lifecycle needs",
-          "description": "An explicit federation compatibility matrix.",
-          "story": "As an enterprise integrator, I want an explicit federation compatibility matrix, so that existing enterprise connections are not lost at migration.",
+          "title": "Define the mandatory enterprise protocol compatibility matrix",
+          "description": "A compatibility matrix covering SAML, OIDC, LDAP/AD and SCIM.",
+          "story": "As an enterprise integrator, I want a compatibility matrix covering SAML, OIDC, LDAP/AD and SCIM, so that all four protocols are implemented and qualified for Falcone.",
           "phase": "P0",
           "effort": "M",
           "dependencies": [
@@ -576,17 +577,17 @@
           "requirements": [
             {
               "id": "FR-FED-002-1",
-              "statement": "The project must inventory actual use of SAML, LDAP/AD and directory provisioning before approving Keycloak retirement."
+              "statement": "The system must support SAML 2.0, OpenID Connect, LDAP including Active Directory integration, and SCIM 2.0 as mandatory product capabilities."
             },
             {
               "id": "FR-FED-002-2",
-              "statement": "Every in-use enterprise integration must have a tested replacement or remain on an explicitly supported migration bridge."
+              "statement": "Keycloak retirement must require passing integration and security evidence for all four protocol families, regardless of whether current tenants already use each one."
             }
           ],
           "acceptance": [
-            "Distinguish SAML declared in Falcone adapters from live integrations; verify inbound federation versus outbound application SSO requirements.",
-            "Record implementation stories and fixtures for every required SAML or SCIM profile; optional connectors remain disabled until qualified.",
-            "Validate subject mapping, deprovisioning latency and account-linking behavior with a representative corporate provider."
+            "Record the owner decision dated 2026-11-01; protocol inclusion is resolved and cannot be downgraded to optional or inventory-dependent.",
+            "Define SAML SP/IdP and OIDC provider/relying-party profiles, LDAP/AD connection and synchronization modes, and SCIM provisioning directions in enterprise-federation.md; qualify concrete providers and optional extensions during P0.",
+            "Maintain test fixtures for subject mapping, group-to-role rules, tenant isolation and deprovisioning; temporary migration bridges cannot substitute for final first-party support."
           ]
         },
         {
@@ -615,6 +616,100 @@
             "Preserve the curated registration and supported application-template contracts rather than exposing unrestricted provider-admin APIs.",
             "Pin the actual MCP authorization specification and tested client transports; do not assume WebSockets define MCP authorization semantics.",
             "Consent, credential rotation, registration abuse, tool-scope removal and cross-server token replay have integration tests."
+          ]
+        },
+        {
+          "id": "IAM-FED-004",
+          "title": "Implement SAML 2.0 inbound and outbound federation",
+          "description": "SAML federation for corporate sign-in and application SSO.",
+          "story": "As an enterprise tenant administrator, I want SAML federation for corporate sign-in and application SSO, so that Falcone can connect enterprise identity providers and applications.",
+          "phase": "P2",
+          "effort": "L",
+          "dependencies": [
+            "IAM-FED-002",
+            "IAM-IDN-001",
+            "IAM-SES-001",
+            "IAM-KEY-001",
+            "IAM-RBAC-002"
+          ],
+          "requirements": [
+            {
+              "id": "FR-FED-004-1",
+              "statement": "The system must implement tenant-scoped SAML 2.0 service-provider and identity-provider adapters with metadata, trusted certificate lifecycle and approved attribute mappings."
+            },
+            {
+              "id": "FR-FED-004-2",
+              "statement": "SAML authentication must resolve to the same Falcone principal, membership, MFA policy and authorization contracts as OIDC authentication."
+            }
+          ],
+          "acceptance": [
+            "Demonstrate inbound login from a reference SAML IdP and outbound SSO to a reference SP using the qualified browser-SSO bindings; do not claim every optional SAML profile.",
+            "Verify issuer, destination, audience, recipient, time conditions, request correlation and replay rejection using a maintained XML-signature implementation; reject signature wrapping and external-entity attacks.",
+            "Test metadata/certificate rollover, explicit NameID mapping, tenant collision and logout/session behavior; unsigned or untrusted identity attributes cannot create privileged roles.",
+            "Document supported single-logout behavior and upstream session limitations; local suspension and revocation remain effective without a successful remote logout."
+          ]
+        },
+        {
+          "id": "IAM-FED-005",
+          "title": "Implement LDAP and Active Directory authentication and synchronization",
+          "description": "Secure LDAP/AD connectors with controlled user and group synchronization.",
+          "story": "As an enterprise administrator, I want secure LDAP/AD connectors with controlled user and group synchronization, so that directory identities can use Falcone without duplicating credentials.",
+          "phase": "P2",
+          "effort": "L",
+          "dependencies": [
+            "IAM-FED-002",
+            "IAM-IDN-002",
+            "IAM-RBAC-002",
+            "IAM-REV-002",
+            "IAM-KEY-001"
+          ],
+          "requirements": [
+            {
+              "id": "FR-FED-005-1",
+              "statement": "The system must connect to generic LDAPv3 directories and Active Directory over validated TLS using scoped connector credentials and configured authentication methods."
+            },
+            {
+              "id": "FR-FED-005-2",
+              "statement": "Directory synchronization must map stable external identities and groups to Falcone memberships, propagate disabling/removal and preserve explicit attribute ownership."
+            }
+          ],
+          "acceptance": [
+            "Test both a generic LDAP directory and Active Directory, including paged search, escaped filters, stable identity mapping across rename, group nesting limits and credential rotation.",
+            "Support LDAPS or required StartTLS without plaintext downgrade; qualify AD signing/channel-binding requirements for the selected bind mechanism and fail safely when corporate policy cannot be met.",
+            "Provide checkpointed synchronization, bounded retries and reconciliation; detect disabled users and removed memberships, then trigger Falcone revocation and report detection lag separately from propagation lag.",
+            "Directory credentials are never copied into local password records; directory outage cannot silently enable stale offline-password login or infer deletion from an incomplete scan."
+          ]
+        },
+        {
+          "id": "IAM-FED-006",
+          "title": "Implement SCIM 2.0 user and group provisioning",
+          "description": "SCIM provisioning endpoints and managed outbound connectors.",
+          "story": "As an enterprise provisioning administrator, I want SCIM provisioning endpoints and managed outbound connectors, so that identity lifecycle changes remain consistent across Falcone and connected applications.",
+          "phase": "P2",
+          "effort": "L",
+          "dependencies": [
+            "IAM-FED-002",
+            "IAM-IDN-002",
+            "IAM-MAC-001",
+            "IAM-RBAC-002",
+            "IAM-REV-002"
+          ],
+          "requirements": [
+            {
+              "id": "FR-FED-006-1",
+              "statement": "The system must implement tenant-scoped SCIM 2.0 User and Group provisioning with discovery, lifecycle operations, group membership and protected connector credentials."
+            },
+            {
+              "id": "FR-FED-006-2",
+              "statement": "SCIM inbound and outbound adapters must apply Falcone identity ownership, role-delegation limits, audit and revocation rules without cross-tenant grants or synchronization loops."
+            }
+          ],
+          "acceptance": [
+            "Qualify service-provider endpoints for Users, Groups, Schemas, ResourceTypes and ServiceProviderConfig, with create/read/replace/patch/delete, filtering, pagination and declared capability flags.",
+            "Test stable server-issued IDs, connector-scoped externalId mappings, uniqueness errors, supported filter/patch semantics and version conflicts; unimplemented optional capabilities are advertised as unsupported.",
+            "Map active=false, deletion and group removal to scoped deprovisioning and revocation; removing one tenant membership must not disable an unrelated tenant membership.",
+            "Demonstrate outbound provisioning to a reference SCIM provider with protected credentials, bounded retries, deduplication/reconciliation after ambiguous timeouts and auditable per-target status.",
+            "Each attribute and membership has one authoritative source; external groups cannot directly create owner/platform grants or bounce mutations between LDAP, SCIM and Falcone."
           ]
         }
       ]
@@ -1124,7 +1219,7 @@
           ],
           "acceptance": [
             "Shadow checks produce no duplicate grants, user mutations or external side effects; mismatches are classified and approved.",
-            "Canary gates cover login, refresh, custom roles, federation, S3, DB, events, MCP, workflows and serverless; native Keycloak passthrough usage is inventoried.",
+            "Canary gates cover login, refresh, custom roles, SAML, OIDC, LDAP/AD, SCIM, S3, DB, events, MCP, workflows and serverless; native Keycloak passthrough usage is inventoried.",
             "Rollback reconciles post-cutover membership and credential changes; it is not an unconditional database snapshot restore."
           ]
         },
@@ -1142,7 +1237,7 @@
           "requirements": [
             {
               "id": "FR-MIG-003-1",
-              "statement": "Keycloak retirement must require signed-off compatibility, security, recovery and operational readiness evidence for every in-use integration."
+              "statement": "Keycloak retirement must require signed-off compatibility, security, recovery and operational readiness evidence for every in-use integration and all mandatory SAML, OIDC, LDAP/AD and SCIM capabilities."
             },
             {
               "id": "FR-MIG-003-2",
@@ -1229,12 +1324,16 @@
             "IAM-MAC-002",
             "IAM-RBAC-003",
             "IAM-OPS-003",
-            "IAM-DEV-002"
+            "IAM-DEV-002",
+            "IAM-FED-001",
+            "IAM-FED-004",
+            "IAM-FED-005",
+            "IAM-FED-006"
           ],
           "requirements": [
             {
               "id": "FR-DEV-003-1",
-              "statement": "A release candidate must pass tenant-isolation, protocol-negative, credential-replay and recovery tests against all enabled integration profiles."
+              "statement": "A release candidate must pass tenant-isolation, protocol-negative, credential-replay and recovery tests for mandatory SAML, OIDC, LDAP/AD and SCIM profiles as well as other enabled integrations."
             },
             {
               "id": "FR-DEV-003-2",

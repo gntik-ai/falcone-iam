@@ -222,5 +222,17 @@
   "IAM-DEV-003": {
     "number": 56,
     "url": "https://github.com/gntik-ai/falcone-iam/issues/56"
+  },
+  "IAM-FED-004": {
+    "number": 57,
+    "url": "https://github.com/gntik-ai/falcone-iam/issues/57"
+  },
+  "IAM-FED-005": {
+    "number": 58,
+    "url": "https://github.com/gntik-ai/falcone-iam/issues/58"
+  },
+  "IAM-FED-006": {
+    "number": 59,
+    "url": "https://github.com/gntik-ai/falcone-iam/issues/59"
   }
 }

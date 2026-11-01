@@ -1,6 +1,6 @@
 # Functional requirements
 
-Planning baseline: 2026-10-31. Each statement is testable and traces to one story. All requirements describe the target, not delivered functionality. See [architecture](architecture.md), [security](security.md) and [operations](operations.md) for normative design detail.
+Planning baseline: 2026-11-01. Each statement is testable and traces to one story. All requirements describe the target, not delivered functionality. See [architecture](architecture.md), [security](security.md) and [operations](operations.md) for normative design detail.
 
 ## Falcone contracts and ownership
 
@@ -74,10 +74,16 @@ Planning baseline: 2026-10-31. Each statement is testable and traces to one stor
 |---|---|---|
 | FR-FED-001-1 | The system must support tenant-scoped upstream OIDC providers with validated issuer, signing keys, redirects and claim mappings. | [IAM-FED-001](https://github.com/gntik-ai/falcone-iam/issues/33) |
 | FR-FED-001-2 | Federated login must map verified external subjects to explicit Falcone memberships without granting privileges from untrusted group names. | [IAM-FED-001](https://github.com/gntik-ai/falcone-iam/issues/33) |
-| FR-FED-002-1 | The project must inventory actual use of SAML, LDAP/AD and directory provisioning before approving Keycloak retirement. | [IAM-FED-002](https://github.com/gntik-ai/falcone-iam/issues/34) |
-| FR-FED-002-2 | Every in-use enterprise integration must have a tested replacement or remain on an explicitly supported migration bridge. | [IAM-FED-002](https://github.com/gntik-ai/falcone-iam/issues/34) |
+| FR-FED-002-1 | The system must support SAML 2.0, OpenID Connect, LDAP including Active Directory integration, and SCIM 2.0 as mandatory product capabilities. | [IAM-FED-002](https://github.com/gntik-ai/falcone-iam/issues/34) |
+| FR-FED-002-2 | Keycloak retirement must require passing integration and security evidence for all four protocol families, regardless of whether current tenants already use each one. | [IAM-FED-002](https://github.com/gntik-ai/falcone-iam/issues/34) |
 | FR-FED-003-1 | External application and MCP clients must use Falcone tenant/workspace registration policies, redirect validation and existing plan limits. | [IAM-FED-003](https://github.com/gntik-ai/falcone-iam/issues/35) |
 | FR-FED-003-2 | MCP authorization must enforce the approved mcp:<server>:<tool> scope mapping and resource audience at each tool invocation. | [IAM-FED-003](https://github.com/gntik-ai/falcone-iam/issues/35) |
+| FR-FED-004-1 | The system must implement tenant-scoped SAML 2.0 service-provider and identity-provider adapters with metadata, trusted certificate lifecycle and approved attribute mappings. | [IAM-FED-004](https://github.com/gntik-ai/falcone-iam/issues/57) |
+| FR-FED-004-2 | SAML authentication must resolve to the same Falcone principal, membership, MFA policy and authorization contracts as OIDC authentication. | [IAM-FED-004](https://github.com/gntik-ai/falcone-iam/issues/57) |
+| FR-FED-005-1 | The system must connect to generic LDAPv3 directories and Active Directory over validated TLS using scoped connector credentials and configured authentication methods. | [IAM-FED-005](https://github.com/gntik-ai/falcone-iam/issues/58) |
+| FR-FED-005-2 | Directory synchronization must map stable external identities and groups to Falcone memberships, propagate disabling/removal and preserve explicit attribute ownership. | [IAM-FED-005](https://github.com/gntik-ai/falcone-iam/issues/58) |
+| FR-FED-006-1 | The system must implement tenant-scoped SCIM 2.0 User and Group provisioning with discovery, lifecycle operations, group membership and protected connector credentials. | [IAM-FED-006](https://github.com/gntik-ai/falcone-iam/issues/59) |
+| FR-FED-006-2 | SCIM inbound and outbound adapters must apply Falcone identity ownership, role-delegation limits, audit and revocation rules without cross-tenant grants or synchronization loops. | [IAM-FED-006](https://github.com/gntik-ai/falcone-iam/issues/59) |
 
 ## Keys, secrets and bootstrap trust
 
@@ -142,7 +148,7 @@ Planning baseline: 2026-10-31. Each statement is testable and traces to one stor
 | FR-MIG-001-2 | The importer must be idempotent, tenant-scoped and produce reconciled counts and a report of unsupported or conflicting objects. | [IAM-MIG-001](https://github.com/gntik-ai/falcone-iam/issues/51) |
 | FR-MIG-002-1 | Migration mode must explicitly allowlist old and new issuers, audiences and principal mappings without accepting arbitrary token sources. | [IAM-MIG-002](https://github.com/gntik-ai/falcone-iam/issues/52) |
 | FR-MIG-002-2 | Tenant canaries must compare authorization outcomes and projection completion before switching the authoritative writer. | [IAM-MIG-002](https://github.com/gntik-ai/falcone-iam/issues/52) |
-| FR-MIG-003-1 | Keycloak retirement must require signed-off compatibility, security, recovery and operational readiness evidence for every in-use integration. | [IAM-MIG-003](https://github.com/gntik-ai/falcone-iam/issues/53) |
+| FR-MIG-003-1 | Keycloak retirement must require signed-off compatibility, security, recovery and operational readiness evidence for every in-use integration and all mandatory SAML, OIDC, LDAP/AD and SCIM capabilities. | [IAM-MIG-003](https://github.com/gntik-ai/falcone-iam/issues/53) |
 | FR-MIG-003-2 | Retirement must revoke obsolete credentials and trust entries, archive required audit evidence and remove approved legacy routes. | [IAM-MIG-003](https://github.com/gntik-ai/falcone-iam/issues/53) |
 
 ## Developer experience and release qualification
@@ -153,6 +159,6 @@ Planning baseline: 2026-10-31. Each statement is testable and traces to one stor
 | FR-DEV-001-2 | Development fixtures must include multiple tenants, machines, custom roles, expired credentials and negative authorization cases. | [IAM-DEV-001](https://github.com/gntik-ai/falcone-iam/issues/54) |
 | FR-DEV-002-1 | Release builds must pin dependencies and publish an SBOM, signed image provenance and migration compatibility notes. | [IAM-DEV-002](https://github.com/gntik-ai/falcone-iam/issues/55) |
 | FR-DEV-002-2 | The project must define security patch ownership, vulnerability reporting and dependency update qualification. | [IAM-DEV-002](https://github.com/gntik-ai/falcone-iam/issues/55) |
-| FR-DEV-003-1 | A release candidate must pass tenant-isolation, protocol-negative, credential-replay and recovery tests against all enabled integration profiles. | [IAM-DEV-003](https://github.com/gntik-ai/falcone-iam/issues/56) |
+| FR-DEV-003-1 | A release candidate must pass tenant-isolation, protocol-negative, credential-replay and recovery tests for mandatory SAML, OIDC, LDAP/AD and SCIM profiles as well as other enabled integrations. | [IAM-DEV-003](https://github.com/gntik-ai/falcone-iam/issues/56) |
 | FR-DEV-003-2 | Production cutover must require independent security review of authentication, authorization, key custody and deployment configuration. | [IAM-DEV-003](https://github.com/gntik-ai/falcone-iam/issues/56) |
 

@@ -6,6 +6,8 @@ Design and implementation backlog for **Falcone's custom identity and authorizat
 
 Research baseline: 2026-10-31. Falcone source examined at [`b694e45`](https://github.com/gntik-ai/falcone/tree/b694e45e487b1c49238e30a544fb7076fc18a7d6). Source presence is evidence of an integration contract, not proof that every path is deployed or production-qualified.
 
+Confirmed scope update, 2026-11-01: **SAML, OIDC, LDAP/AD and SCIM are all mandatory**. See the [enterprise integration profile](docs/enterprise-federation.md) and [accepted scope decision](docs/decisions/0002-mandatory-enterprise-protocols.md).
+
 ## Start here
 
 | Document | Purpose |
@@ -14,8 +16,8 @@ Research baseline: 2026-10-31. Falcone source examined at [`b694e45`](https://gi
 | [Open-source survey](docs/open-source-survey.md) | Keycloak plus 12 alternative projects, reusable patterns and trade-offs |
 | [Architecture](docs/architecture.md) | Components, stack, ownership, data model and request flows |
 | [Integration matrix](docs/integration-matrix.md) | Contracts for every identified Falcone subsystem |
-| [Functional requirements](docs/requirements.md) | 84 testable requirements with story traceability |
-| [Epics and stories](docs/backlog.md) | 14 epics and 42 stories with acceptance criteria and dependencies |
+| [Functional requirements](docs/requirements.md) | 90 testable requirements with story traceability |
+| [Epics and stories](docs/backlog.md) | 14 epics and 45 stories with acceptance criteria and dependencies |
 | [Security model](docs/security.md) | Trust boundaries, token lifecycle, revocation and threat controls |
 | [Operations](docs/operations.md) | Proposed SLOs, sizing, restricted deployment and ownership |
 | [Migration](docs/migration.md) | Inventory, import, canary, rollback and Keycloak retirement |
@@ -25,7 +27,7 @@ Research baseline: 2026-10-31. Falcone source examined at [`b694e45`](https://gi
 
 ## Delivery plan
 
-1. **P0 — qualify the boundary:** freeze Falcone contracts, establish actual identity load and enterprise federation needs, and qualify the protocol library.
+1. **P0 — qualify the boundary:** freeze Falcone contracts, establish actual identity load and the implementation profiles for mandatory SAML/OIDC/LDAP/AD/SCIM support, and qualify the protocol components.
 2. **P1 — build the core:** identity lifecycle, scoped RBAC, OIDC, sessions, keys, machines, outbox and restricted deployment.
 3. **P2 — integrate and qualify:** consoles, gateway, data/storage, realtime, workflows, functions, security review and recovery drills.
 4. **P3 — migrate:** explicit dual-issuer trust, shadow decisions, tenant canaries, then separately approved Keycloak retirement.

@@ -30,7 +30,7 @@ Each issue uses a stable IAM identifier. Parent links and epic task lists expres
     - Requirements: FR-CON-003-1, FR-CON-003-2
     - Dependencies: [IAM-CON-001](https://github.com/gntik-ai/falcone-iam/issues/15)
     - Acceptance: Prototype the proposed Node.js oidc-provider adapter with PostgreSQL persistence and production key custody; compare Go/Fosite or a Hydra adapter if a mandatory feature fails.
-    - Acceptance: Record supported flows, unsupported extensions, license obligations, key-signing integration and measured operational costs in an ADR.
+    - Acceptance: Record supported flows, unsupported extensions, license obligations, key-signing integration and measured operational costs in an ADR; qualify separate SAML, LDAP/AD and SCIM components because the OIDC library does not implement those protocols.
     - Acceptance: Passing library certification must not be represented as certification of Falcone; release requires tests of Falcone configuration and adapters.
 
 - **[IAM-IDN](https://github.com/gntik-ai/falcone-iam/issues/2): Identity, tenancy and membership lifecycle** — Manage tenant-isolated human and service principals with stable identifiers.
@@ -178,25 +178,25 @@ Each issue uses a stable IAM identifier. Parent links and epic task lists expres
     - Acceptance: Kubernetes service-account exchange, if enabled, binds namespace and service account and rejects arbitrary external JWTs.
     - Acceptance: No privileged daemon, runtime sandbox or cluster-wide operator is required for the baseline IAM service.
 
-- **[IAM-FED](https://github.com/gntik-ai/falcone-iam/issues/7): Federation, external applications and MCP** — Integrate enterprise identity and application access through Falcone controls.
+- **[IAM-FED](https://github.com/gntik-ai/falcone-iam/issues/7): Federation, external applications and MCP** — Deliver mandatory SAML, OIDC, LDAP/AD and SCIM support through Falcone identity, tenant/workspace and application controls.
 
   - **[IAM-FED-001](https://github.com/gntik-ai/falcone-iam/issues/33): Implement external OIDC federation** (P2, L)
     - As an enterprise tenant administrator, I want an allowlisted upstream identity provider, so that employees can use their existing corporate identity.
     - Description: An allowlisted upstream identity provider.
     - Requirements: FR-FED-001-1, FR-FED-001-2
-    - Dependencies: [IAM-SES-001](https://github.com/gntik-ai/falcone-iam/issues/24), [IAM-IDN-001](https://github.com/gntik-ai/falcone-iam/issues/18)
+    - Dependencies: [IAM-SES-001](https://github.com/gntik-ai/falcone-iam/issues/24), [IAM-IDN-001](https://github.com/gntik-ai/falcone-iam/issues/18), [IAM-FED-002](https://github.com/gntik-ai/falcone-iam/issues/34)
     - Acceptance: Tests cover issuer mix-up, key rotation, malicious discovery URLs, provider outage and callback replay.
     - Acceptance: JIT provisioning is explicitly enabled per tenant and cannot create an owner or platform role implicitly.
     - Acceptance: Administrative provider changes require step-up and audit; failed federation has a documented recovery path.
 
-  - **[IAM-FED-002](https://github.com/gntik-ai/falcone-iam/issues/34): Qualify enterprise SAML and directory lifecycle needs** (P0, M)
-    - As an enterprise integrator, I want an explicit federation compatibility matrix, so that existing enterprise connections are not lost at migration.
-    - Description: An explicit federation compatibility matrix.
+  - **[IAM-FED-002](https://github.com/gntik-ai/falcone-iam/issues/34): Define the mandatory enterprise protocol compatibility matrix** (P0, M)
+    - As an enterprise integrator, I want a compatibility matrix covering SAML, OIDC, LDAP/AD and SCIM, so that all four protocols are implemented and qualified for Falcone.
+    - Description: A compatibility matrix covering SAML, OIDC, LDAP/AD and SCIM.
     - Requirements: FR-FED-002-1, FR-FED-002-2
     - Dependencies: [IAM-CON-001](https://github.com/gntik-ai/falcone-iam/issues/15)
-    - Acceptance: Distinguish SAML declared in Falcone adapters from live integrations; verify inbound federation versus outbound application SSO requirements.
-    - Acceptance: Record implementation stories and fixtures for every required SAML or SCIM profile; optional connectors remain disabled until qualified.
-    - Acceptance: Validate subject mapping, deprovisioning latency and account-linking behavior with a representative corporate provider.
+    - Acceptance: Record the owner decision dated 2026-11-01; protocol inclusion is resolved and cannot be downgraded to optional or inventory-dependent.
+    - Acceptance: Define SAML SP/IdP and OIDC provider/relying-party profiles, LDAP/AD connection and synchronization modes, and SCIM provisioning directions in enterprise-federation.md; qualify concrete providers and optional extensions during P0.
+    - Acceptance: Maintain test fixtures for subject mapping, group-to-role rules, tenant isolation and deprovisioning; temporary migration bridges cannot substitute for final first-party support.
 
   - **[IAM-FED-003](https://github.com/gntik-ai/falcone-iam/issues/35): Implement external application and MCP registration** (P2, L)
     - As an application owner, I want Falcone-controlled client registration and tool scopes, so that applications get only approved capabilities.
@@ -206,6 +206,37 @@ Each issue uses a stable IAM identifier. Parent links and epic task lists expres
     - Acceptance: Preserve the curated registration and supported application-template contracts rather than exposing unrestricted provider-admin APIs.
     - Acceptance: Pin the actual MCP authorization specification and tested client transports; do not assume WebSockets define MCP authorization semantics.
     - Acceptance: Consent, credential rotation, registration abuse, tool-scope removal and cross-server token replay have integration tests.
+
+  - **[IAM-FED-004](https://github.com/gntik-ai/falcone-iam/issues/57): Implement SAML 2.0 inbound and outbound federation** (P2, L)
+    - As an enterprise tenant administrator, I want SAML federation for corporate sign-in and application SSO, so that Falcone can connect enterprise identity providers and applications.
+    - Description: SAML federation for corporate sign-in and application SSO.
+    - Requirements: FR-FED-004-1, FR-FED-004-2
+    - Dependencies: [IAM-FED-002](https://github.com/gntik-ai/falcone-iam/issues/34), [IAM-IDN-001](https://github.com/gntik-ai/falcone-iam/issues/18), [IAM-SES-001](https://github.com/gntik-ai/falcone-iam/issues/24), [IAM-KEY-001](https://github.com/gntik-ai/falcone-iam/issues/36), [IAM-RBAC-002](https://github.com/gntik-ai/falcone-iam/issues/28)
+    - Acceptance: Demonstrate inbound login from a reference SAML IdP and outbound SSO to a reference SP using the qualified browser-SSO bindings; do not claim every optional SAML profile.
+    - Acceptance: Verify issuer, destination, audience, recipient, time conditions, request correlation and replay rejection using a maintained XML-signature implementation; reject signature wrapping and external-entity attacks.
+    - Acceptance: Test metadata/certificate rollover, explicit NameID mapping, tenant collision and logout/session behavior; unsigned or untrusted identity attributes cannot create privileged roles.
+    - Acceptance: Document supported single-logout behavior and upstream session limitations; local suspension and revocation remain effective without a successful remote logout.
+
+  - **[IAM-FED-005](https://github.com/gntik-ai/falcone-iam/issues/58): Implement LDAP and Active Directory authentication and synchronization** (P2, L)
+    - As an enterprise administrator, I want secure LDAP/AD connectors with controlled user and group synchronization, so that directory identities can use Falcone without duplicating credentials.
+    - Description: Secure LDAP/AD connectors with controlled user and group synchronization.
+    - Requirements: FR-FED-005-1, FR-FED-005-2
+    - Dependencies: [IAM-FED-002](https://github.com/gntik-ai/falcone-iam/issues/34), [IAM-IDN-002](https://github.com/gntik-ai/falcone-iam/issues/19), [IAM-RBAC-002](https://github.com/gntik-ai/falcone-iam/issues/28), [IAM-REV-002](https://github.com/gntik-ai/falcone-iam/issues/43), [IAM-KEY-001](https://github.com/gntik-ai/falcone-iam/issues/36)
+    - Acceptance: Test both a generic LDAP directory and Active Directory, including paged search, escaped filters, stable identity mapping across rename, group nesting limits and credential rotation.
+    - Acceptance: Support LDAPS or required StartTLS without plaintext downgrade; qualify AD signing/channel-binding requirements for the selected bind mechanism and fail safely when corporate policy cannot be met.
+    - Acceptance: Provide checkpointed synchronization, bounded retries and reconciliation; detect disabled users and removed memberships, then trigger Falcone revocation and report detection lag separately from propagation lag.
+    - Acceptance: Directory credentials are never copied into local password records; directory outage cannot silently enable stale offline-password login or infer deletion from an incomplete scan.
+
+  - **[IAM-FED-006](https://github.com/gntik-ai/falcone-iam/issues/59): Implement SCIM 2.0 user and group provisioning** (P2, L)
+    - As an enterprise provisioning administrator, I want SCIM provisioning endpoints and managed outbound connectors, so that identity lifecycle changes remain consistent across Falcone and connected applications.
+    - Description: SCIM provisioning endpoints and managed outbound connectors.
+    - Requirements: FR-FED-006-1, FR-FED-006-2
+    - Dependencies: [IAM-FED-002](https://github.com/gntik-ai/falcone-iam/issues/34), [IAM-IDN-002](https://github.com/gntik-ai/falcone-iam/issues/19), [IAM-MAC-001](https://github.com/gntik-ai/falcone-iam/issues/30), [IAM-RBAC-002](https://github.com/gntik-ai/falcone-iam/issues/28), [IAM-REV-002](https://github.com/gntik-ai/falcone-iam/issues/43)
+    - Acceptance: Qualify service-provider endpoints for Users, Groups, Schemas, ResourceTypes and ServiceProviderConfig, with create/read/replace/patch/delete, filtering, pagination and declared capability flags.
+    - Acceptance: Test stable server-issued IDs, connector-scoped externalId mappings, uniqueness errors, supported filter/patch semantics and version conflicts; unimplemented optional capabilities are advertised as unsupported.
+    - Acceptance: Map active=false, deletion and group removal to scoped deprovisioning and revocation; removing one tenant membership must not disable an unrelated tenant membership.
+    - Acceptance: Demonstrate outbound provisioning to a reference SCIM provider with protected credentials, bounded retries, deduplication/reconciliation after ambiguous timeouts and auditable per-target status.
+    - Acceptance: Each attribute and membership has one authoritative source; external groups cannot directly create owner/platform grants or bounce mutations between LDAP, SCIM and Falcone.
 
 - **[IAM-KEY](https://github.com/gntik-ai/falcone-iam/issues/8): Keys, secrets and bootstrap trust** — Protect signing material and make rotation and emergency recovery explicit.
 
@@ -369,7 +400,7 @@ Each issue uses a stable IAM identifier. Parent links and epic task lists expres
     - Requirements: FR-MIG-002-1, FR-MIG-002-2
     - Dependencies: [IAM-MIG-001](https://github.com/gntik-ai/falcone-iam/issues/51), [IAM-INT-001](https://github.com/gntik-ai/falcone-iam/issues/39), [IAM-INT-002](https://github.com/gntik-ai/falcone-iam/issues/40), [IAM-INT-003](https://github.com/gntik-ai/falcone-iam/issues/41), [IAM-DEV-003](https://github.com/gntik-ai/falcone-iam/issues/56)
     - Acceptance: Shadow checks produce no duplicate grants, user mutations or external side effects; mismatches are classified and approved.
-    - Acceptance: Canary gates cover login, refresh, custom roles, federation, S3, DB, events, MCP, workflows and serverless; native Keycloak passthrough usage is inventoried.
+    - Acceptance: Canary gates cover login, refresh, custom roles, SAML, OIDC, LDAP/AD, SCIM, S3, DB, events, MCP, workflows and serverless; native Keycloak passthrough usage is inventoried.
     - Acceptance: Rollback reconciles post-cutover membership and credential changes; it is not an unconditional database snapshot restore.
 
   - **[IAM-MIG-003](https://github.com/gntik-ai/falcone-iam/issues/53): Retire Keycloak after compatibility and security gates** (P3, M)
@@ -405,7 +436,7 @@ Each issue uses a stable IAM identifier. Parent links and epic task lists expres
     - As a security reviewer, I want adversarial and failure-injection evidence, so that Keycloak is replaced only after the new service proves its boundaries.
     - Description: Adversarial and failure-injection evidence.
     - Requirements: FR-DEV-003-1, FR-DEV-003-2
-    - Dependencies: [IAM-SES-003](https://github.com/gntik-ai/falcone-iam/issues/26), [IAM-AUT-002](https://github.com/gntik-ai/falcone-iam/issues/22), [IAM-MAC-002](https://github.com/gntik-ai/falcone-iam/issues/31), [IAM-RBAC-003](https://github.com/gntik-ai/falcone-iam/issues/29), [IAM-OPS-003](https://github.com/gntik-ai/falcone-iam/issues/50), [IAM-DEV-002](https://github.com/gntik-ai/falcone-iam/issues/55)
+    - Dependencies: [IAM-SES-003](https://github.com/gntik-ai/falcone-iam/issues/26), [IAM-AUT-002](https://github.com/gntik-ai/falcone-iam/issues/22), [IAM-MAC-002](https://github.com/gntik-ai/falcone-iam/issues/31), [IAM-RBAC-003](https://github.com/gntik-ai/falcone-iam/issues/29), [IAM-OPS-003](https://github.com/gntik-ai/falcone-iam/issues/50), [IAM-DEV-002](https://github.com/gntik-ai/falcone-iam/issues/55), [IAM-FED-001](https://github.com/gntik-ai/falcone-iam/issues/33), [IAM-FED-004](https://github.com/gntik-ai/falcone-iam/issues/57), [IAM-FED-005](https://github.com/gntik-ai/falcone-iam/issues/58), [IAM-FED-006](https://github.com/gntik-ai/falcone-iam/issues/59)
     - Acceptance: Threat tests cover confused deputy, forged context, OAuth mix-up, CSRF, SSRF, privilege escalation, stale grants and refresh races.
     - Acceptance: Fault tests cover replica crashes, broker partitions, delayed/out-of-order events, DB restore and key rotation with declared fail-closed behavior.
     - Acceptance: Document residual findings, remediation owners and approved exceptions; ordinary containers are not represented as a security sandbox for hostile tenant code.

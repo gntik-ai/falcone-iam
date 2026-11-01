@@ -6,7 +6,7 @@ No migration or production change is performed by this documentation bootstrap. 
 
 Pin the actual deployed Keycloak versions, extensions, realms, issuers, keys, clients, callback URLs, protocols, scopes, users, federation connections, required actions, sessions and machine credentials. Compare with source catalogs rather than assuming every declared feature is live. Capture sanitized golden fixtures for login, refresh, role decisions, delegation and each backend integration.
 
-Inventory direct Keycloak SDKs, issuer URLs, Admin API callers, service-account tokens, native gateway passthrough, scripts and emergency procedures. Separate user-facing Falcone compatibility from operator-only `/_native/keycloak/admin/*` routes. Confirm enterprise SAML direction/profile, LDAP/AD and provisioning requirements. Every in-use capability gets a tested replacement or an explicit bridge.
+Inventory direct Keycloak SDKs, issuer URLs, Admin API callers, service-account tokens, native gateway passthrough, scripts and emergency procedures. Separate user-facing Falcone compatibility from operator-only `/_native/keycloak/admin/*` routes. SAML, OIDC, LDAP/AD and SCIM are all mandatory, regardless of current usage. Qualify their concrete profiles and provider configurations. Every in-use capability gets a tested replacement; a temporary bridge may support migration but cannot satisfy the final mandatory-protocol gate.
 
 ## Stage 1 — establish mappings and dry-run imports
 
@@ -34,7 +34,7 @@ Keep a single authoritative writer for each tenant and entity throughout the tra
 
 ## Stage 3 — tenant canaries
 
-Move approved low-risk tenants/clients first. Gates include login/refresh/recovery/MFA, corporate federation, API keys/service accounts, role edits, Postgres/document isolation, S3 bucket isolation, event and WebSocket revocation, MCP registration/tool scopes, functions and workflow resumption. Verify current and future execution adapters where enabled.
+Move approved low-risk tenants/clients first. Gates include login/refresh/recovery/MFA, SAML and OIDC federation, LDAP/AD authentication/synchronization, SCIM lifecycle and deprovisioning, API keys/service accounts, role edits, Postgres/document isolation, S3 bucket isolation, event and WebSocket revocation, MCP registration/tool scopes, functions and workflow resumption. Verify current and future execution adapters where enabled. Reference integrations cover mandatory protocols not yet used by a canary tenant.
 
 Measure decision mismatches, latency, availability, outbox lag, revocation bounds, error codes and support incidents. Define go/no-go thresholds and an observation window with owners before execution. Keep old trust only as long as necessary and never widen audiences to make a test pass.
 
@@ -46,6 +46,6 @@ Declare an irreversible boundary for unsupported credential transformation, sche
 
 ## Stage 4 — retire Keycloak
 
-Require approved compatibility evidence, configured-service protocol qualification, independent security review, recovery drill, on-call ownership and all projection/revocation gates. Confirm no required integration remains on the bridge. End the agreed rollback window; revoke old clients and trust, retire approved native routes, retain audit/export evidence securely and document supported interfaces.
+Require approved compatibility evidence, configured-service protocol qualification, independent security review, recovery drill, on-call ownership and all projection/revocation gates. SAML, OIDC, LDAP/AD and SCIM must each pass the [enterprise qualification matrix](enterprise-federation.md), even if a protocol has no existing production tenant. Confirm no required integration remains on the bridge. End the agreed rollback window; revoke old clients and trust, retire approved native routes, retain audit/export evidence securely and document supported interfaces.
 
 The owner authorizes the actual production deployment and removal separately. Publishing this repository does not disable or modify Keycloak in Falcone.

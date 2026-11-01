@@ -49,3 +49,7 @@ Repository examined at commit [`b694e45e487b1c49238e30a544fb7076fc18a7d6`](https
 | [WebAuthn](https://www.w3.org/TR/webauthn-3/) | RP/origin/challenge/credential verification reference; pin supported level during implementation |
 
 Recommendations, proposed SLOs, effort estimates and the final architecture are engineering judgments based on this evidence. They are not benchmark claims or upstream guarantees.
+
+## Mandatory-protocol update — 2026-11-01
+
+The owner's instruction makes SAML, OIDC, LDAP/AD and SCIM mandatory; this is a product decision rather than an inference from the survey. Additional primary protocol/security references are linked in [enterprise-federation.md](enterprise-federation.md), including the OASIS SAML standards/errata, SCIM RFCs 7643/7644 and Microsoft LDAP signing/channel-binding guidance.

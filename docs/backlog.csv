@@ -24,9 +24,12 @@ IAM-MAC-001,Story,Implement service accounts and API-key lifecycle,IAM-MAC,P1,L,
 IAM-MAC-002,Story,Implement scoped delegation for functions and workflows,IAM-MAC,P2,L,IAM-MAC-001;IAM-SES-003,https://github.com/gntik-ai/falcone-iam/issues/31
 IAM-MAC-003,Story,Implement application client authentication and workload trust,IAM-MAC,P2,L,IAM-MAC-001;IAM-SES-001,https://github.com/gntik-ai/falcone-iam/issues/32
 IAM-FED,Epic,"Federation, external applications and MCP",,,,,https://github.com/gntik-ai/falcone-iam/issues/7
-IAM-FED-001,Story,Implement external OIDC federation,IAM-FED,P2,L,IAM-SES-001;IAM-IDN-001,https://github.com/gntik-ai/falcone-iam/issues/33
-IAM-FED-002,Story,Qualify enterprise SAML and directory lifecycle needs,IAM-FED,P0,M,IAM-CON-001,https://github.com/gntik-ai/falcone-iam/issues/34
+IAM-FED-001,Story,Implement external OIDC federation,IAM-FED,P2,L,IAM-SES-001;IAM-IDN-001;IAM-FED-002,https://github.com/gntik-ai/falcone-iam/issues/33
+IAM-FED-002,Story,Define the mandatory enterprise protocol compatibility matrix,IAM-FED,P0,M,IAM-CON-001,https://github.com/gntik-ai/falcone-iam/issues/34
 IAM-FED-003,Story,Implement external application and MCP registration,IAM-FED,P2,L,IAM-FED-001;IAM-RBAC-002;IAM-MAC-001,https://github.com/gntik-ai/falcone-iam/issues/35
+IAM-FED-004,Story,Implement SAML 2.0 inbound and outbound federation,IAM-FED,P2,L,IAM-FED-002;IAM-IDN-001;IAM-SES-001;IAM-KEY-001;IAM-RBAC-002,https://github.com/gntik-ai/falcone-iam/issues/57
+IAM-FED-005,Story,Implement LDAP and Active Directory authentication and synchronization,IAM-FED,P2,L,IAM-FED-002;IAM-IDN-002;IAM-RBAC-002;IAM-REV-002;IAM-KEY-001,https://github.com/gntik-ai/falcone-iam/issues/58
+IAM-FED-006,Story,Implement SCIM 2.0 user and group provisioning,IAM-FED,P2,L,IAM-FED-002;IAM-IDN-002;IAM-MAC-001;IAM-RBAC-002;IAM-REV-002,https://github.com/gntik-ai/falcone-iam/issues/59
 IAM-KEY,Epic,"Keys, secrets and bootstrap trust",,,,,https://github.com/gntik-ai/falcone-iam/issues/8
 IAM-KEY-001,Story,Implement managed signing keys and JWKS rotation,IAM-KEY,P1,L,IAM-CON-003,https://github.com/gntik-ai/falcone-iam/issues/36
 IAM-KEY-002,Story,Implement first-owner bootstrap and break-glass recovery,IAM-KEY,P1,M,IAM-KEY-001;IAM-RBAC-001,https://github.com/gntik-ai/falcone-iam/issues/37
@@ -54,4 +57,4 @@ IAM-MIG-003,Story,Retire Keycloak after compatibility and security gates,IAM-MIG
 IAM-DEV,Epic,Developer experience and release qualification,,,,,https://github.com/gntik-ai/falcone-iam/issues/14
 IAM-DEV-001,Story,"Publish API schemas, SDK helpers and local fixtures",IAM-DEV,P1,M,IAM-CON-001;IAM-RBAC-002,https://github.com/gntik-ai/falcone-iam/issues/54
 IAM-DEV-002,Story,Implement secure build and dependency maintenance,IAM-DEV,P1,M,IAM-CON-003,https://github.com/gntik-ai/falcone-iam/issues/55
-IAM-DEV-003,Story,"Qualify isolation, protocol security and failure behavior",IAM-DEV,P2,L,IAM-SES-003;IAM-AUT-002;IAM-MAC-002;IAM-RBAC-003;IAM-OPS-003;IAM-DEV-002,https://github.com/gntik-ai/falcone-iam/issues/56
+IAM-DEV-003,Story,"Qualify isolation, protocol security and failure behavior",IAM-DEV,P2,L,IAM-SES-003;IAM-AUT-002;IAM-MAC-002;IAM-RBAC-003;IAM-OPS-003;IAM-DEV-002;IAM-FED-001;IAM-FED-004;IAM-FED-005;IAM-FED-006,https://github.com/gntik-ai/falcone-iam/issues/56

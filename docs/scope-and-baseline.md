@@ -37,6 +37,6 @@ Comments and pure contract helpers do not establish end-to-end production enforc
 
 ## Initial product boundary
 
-Include local and federated identity, tenant/workspace memberships, sessions, MFA, OIDC/OAuth, machine identities, scoped delegation, custom roles, decisions, audit and revocation projections. Include enterprise connectors required by actual current usage; optional SAML/LDAP/SCIM breadth follows inventory and qualification.
+Include local and federated identity, tenant/workspace memberships, sessions, MFA, OIDC/OAuth, machine identities, scoped delegation, custom roles, decisions, audit and revocation projections. **SAML 2.0, OIDC, LDAP/AD and SCIM 2.0 support are mandatory**, confirmed by the owner on 2026-11-01. Inventory selects concrete integration profiles and providers; it cannot remove any of these four capabilities from the product. See [enterprise integration](enterprise-federation.md).
 
 Exclude custom cryptography, a replacement for OpenBao, global human-resources provisioning, a general-purpose workflow engine, unlimited tenant policy scripting, and a second resource database. Application teams continue to own resource facts and enforce decisions. The proposal does not assert full Keycloak feature parity, a production SLA or compatibility with unobserved plugins.

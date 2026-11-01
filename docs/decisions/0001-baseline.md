@@ -2,6 +2,8 @@
 
 Date: 2026-10-31. Status: **proposed**, pending P0 evidence and owner decisions. The request authorizes planning publication, not acceptance of every technical choice or production cutover.
 
+Scope amendment: [ADR 0002](0002-mandatory-enterprise-protocols.md), accepted 2026-11-01, makes SAML, OIDC, LDAP/AD and SCIM mandatory. Other technical proposals in this ADR retain their status.
+
 ## Decision
 
 Build a custom Falcone identity and authorization service. Retain Falcone contracts and permission semantics. Start with a modular TypeScript/Node.js service, a qualified `oidc-provider` adapter, PostgreSQL, OpenBao/KMS and Kafka outbox/projections. Separate protocol/API and worker deployments; avoid a large microservice topology until measured needs justify it.
@@ -30,4 +32,4 @@ The major cost is taking responsibility for credential lifecycle, protocol confi
 
 ## Hard boundaries
 
-No new cryptographic algorithms, handwritten OAuth stack, arbitrary tenant IAM plugins, blanket shared admin credentials or unlimited offline authorization. No new cluster-level operator is required by the baseline. IAM remains usable when workflow or serverless is unavailable. Libraries, project license, enterprise federation profiles and actual OpenShift support remain explicit qualification decisions.
+No new cryptographic algorithms, handwritten OAuth stack, arbitrary tenant IAM plugins, blanket shared admin credentials or unlimited offline authorization. No new cluster-level operator is required by the baseline. IAM remains usable when workflow or serverless is unavailable. Libraries, project license, concrete enterprise provider/profile details and actual OpenShift support remain explicit qualification decisions; support for all four enterprise protocol families is mandatory.

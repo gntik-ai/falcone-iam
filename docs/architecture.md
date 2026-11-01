@@ -6,6 +6,8 @@ Status: proposed, subject to P0 compatibility and protocol-library qualification
 
 `falcone-iam` owns Falcone identity lifecycle, protocol endpoints, sessions, machine credentials and the authorization control plane. It exposes Falcone-native management contracts and standard OIDC/OAuth interfaces. Resource services remain responsible for enforcement and authoritative resource facts.
 
+Mandatory enterprise capabilities are **SAML 2.0, OIDC, LDAP/AD and SCIM 2.0**, per the owner decision of 2026-11-01. The OIDC component does not cover the other protocols: separate reviewed SAML, directory and SCIM adapters feed the same Falcone identity/membership core. The [enterprise integration profile](enterprise-federation.md) defines their boundaries and test gates.
+
 ```mermaid
 flowchart TD
     C["Console, SDKs and external clients"] --> G["APISIX"]
@@ -14,7 +16,10 @@ flowchart TD
     I --> A["Falcone authorization decisions"]
     I --> DB["PostgreSQL identity, policy and outbox"]
     P --> K["OpenBao or approved KMS"]
-    P --> F["Corporate identity providers"]
+    P --> F["Corporate OIDC and SAML providers"]
+    I --> L["LDAP and Active Directory connectors"]
+    I --> Q["SCIM provisioning adapters"]
+    Q --> W
     DB --> W["Projection and audit workers"]
     W --> E["Kafka"]
     G --> S["Falcone resource services"]
@@ -33,6 +38,9 @@ IAM API/protocol and worker are initially two deployment roles from one modular 
 |---|---|---|
 | Application core | TypeScript, supported Node.js LTS, modular service | Aligns with the observed Falcone JavaScript contracts and adapters; runtime version pinned during P0 |
 | OIDC/OAuth | Qualified `oidc-provider` library; maintained JOSE libraries for consumers | Product code owns persistence, UI and policy while a specialist library handles protocol mechanics. Confirm required extensions and signing adapter; Go/Fosite or Hydra remain evaluated fallbacks |
+| SAML | Maintained SAML/XML-security components behind Falcone SP/IdP adapters | Mandatory corporate login and application SSO profiles; qualify bindings, metadata, signing and certificate rotation separately from OIDC |
+| LDAP/AD | Reviewed LDAP client with TLS, directory-specific adapters and synchronization workers | Mandatory generic LDAP and Active Directory integration; retain directory credential custody and map identities to Falcone scopes |
+| SCIM | Versioned SCIM 2.0 endpoints and outbound provisioning adapters | Mandatory lifecycle interoperability; reuse Falcone lifecycle transactions, outbox, revocation and explicit attribute authority |
 | Authorization | Falcone's versioned permission catalog and bounded RBAC/attribute rules | Reuse existing semantics. No graph database or general tenant scripting in the baseline |
 | Durable storage | Existing PostgreSQL service, dedicated IAM schema/role and migrations | Transactions cover credentials, sessions, grants and outbox; scoped constraints provide defense in depth. Do not reuse an unrestricted control-plane database credential |
 | Keys and recoverable secrets | Existing OpenBao or approved KMS with encrypted envelope/signing adapter | Reuse the platform trust custodian. Remote signing compatibility and throughput must be proven; encrypted private keys in memory are an explicit alternative, not non-exportable keys |
@@ -47,7 +55,8 @@ IAM API/protocol and worker are initially two deployment roles from one modular 
 
 | Object | Authoritative owner | Consumer behavior |
 |---|---|---|
-| Principal, external subject link, credentials and sessions | IAM after cutover | Immutable principal ID; external identity key is verified `(issuer, subject)` |
+| Principal, external subject link, local credentials and Falcone sessions | IAM after cutover; external credentials remain with the upstream provider/directory | Immutable principal ID; OIDC uses verified `(issuer, subject)`, SAML uses qualified provider/NameID mapping, and LDAP/SCIM use connector-scoped stable identity mappings |
+| Directory/SCIM-managed attributes and memberships | Explicit source policy per connector, attribute and membership | An upstream source can propose only configured scoped changes; Falcone retains role catalog/delegation constraints and prevents synchronization loops |
 | Tenant/workspace resource existence and resource ownership | Existing Falcone control/resource services | IAM consumes verified references and lifecycle events; never trusts a client-supplied owner attribute |
 | Memberships, role bindings and custom grants | Existing Falcone source until migration; IAM after explicit single-writer handoff | Preserve catalog and contract; no bidirectional last-writer-wins synchronization |
 | Built-in permissions and semantics | Falcone versioned internal contracts, released with IAM | A resource/action change is a contract change with migration tests |
@@ -56,7 +65,7 @@ IAM API/protocol and worker are initially two deployment roles from one modular 
 | Signing material / recoverable secret bytes | OpenBao/KMS custody, IAM lifecycle policy | Only dedicated components can sign or decrypt; resource runtimes receive scoped credentials |
 | Security audit | Durable IAM audit acceptance plus approved Falcone audit store | Tenant admins cannot edit their security trail; access and retention are controlled |
 
-Suggested logical tables: `principals`, `external_identities`, `memberships`, `groups`, `group_memberships`, `role_definitions`, `role_bindings`, `clients`, `consents`, `credentials`, `sessions`, `refresh_families`, `auth_interactions`, `key_metadata`, `policy_revisions`, `outbox`, `projection_state`, `audit_events`, `migration_mappings`. Names are proposals, not committed database compatibility promises. Groups, if enabled, use explicit membership and bounded hierarchy; prevent cycles and privilege escalation.
+Suggested logical tables: `principals`, `external_identities`, `memberships`, `groups`, `group_memberships`, `role_definitions`, `role_bindings`, `clients`, `consents`, `credentials`, `sessions`, `refresh_families`, `auth_interactions`, `key_metadata`, `policy_revisions`, `outbox`, `projection_state`, `audit_events`, `migration_mappings`, `enterprise_connectors`, `connector_mappings`, `sync_checkpoints`. Names are proposals, not committed database compatibility promises. Groups support mandatory LDAP/SCIM integration through explicit membership and bounded hierarchy; prevent cycles and privilege escalation.
 
 Tenant-owned entities include `tenant_id`; workspace entities include `workspace_id`. Scoped foreign keys and authorization checks prevent an ID from being attached to another tenant. Globally stable principals do not imply global profile visibility: membership grants access to a tenant-scoped view. Platform administrators are distinct from tenant administrators; cross-tenant support actions require explicit permission and audit. There is no undocumented `internal=true` bypass.
 
